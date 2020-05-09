@@ -69,6 +69,7 @@ let oxftInstructionElement;
 let oxftUserInfoElement;
 let oxftQuestionElement;
 let oxftResultsElement;
+let oxftQuestionsElements = [];
 
 
 let oxftQuestions;
@@ -161,7 +162,7 @@ function oxftAddRadioInputs(element, name, required, options) {
   }
 }
 
-function oxftCreateQuestion(item) {
+function oxftCreateField(item) {
   let result = document.createElement("li");
 
   let inpName = 'inp_' + item.name;
@@ -185,10 +186,10 @@ function oxftCreateQuestion(item) {
   return result;
 }
 
-function oxftCreateQuestions(items) {
+function oxftCreateFields(items) {
   const result = oxftCreateList([]);
   for(let i = 0; i < items.length; i++) {
-    result.appendChild(oxftCreateQuestion(items[i]));
+    result.appendChild(oxftCreateField(items[i]));
   }
   return result;
 }
@@ -213,7 +214,7 @@ function oxftCreateUserInfoForm(element) {
   const oxftForm = document.createElement("form");
 
   oxftForm.appendChild(oxftCreateHeader(oxftUserInfoForm.caption));
-  oxftForm.appendChild(oxftCreateQuestions(oxftUserInfoForm.questions));
+  oxftForm.appendChild(oxftCreateFields(oxftUserInfoForm.questions));
   oxftForm.appendChild(oxftCreateButton('Далее'));
   oxftForm.addEventListener('submit', oxftSubmitUserInfo);
 
@@ -238,39 +239,53 @@ function oxftCreateInstruction(element) {
   element.appendChild(oxftForm);
 }
 
-function oxftAskQuestion(element, question) {
+function oxftCreateQuestion(name) {
+  const result = document.createElement("div");
   const textDiv = document.createElement("div");
-  textDiv.id = 'divText_' + question.num;
+  textDiv.id = 'divText_' + name;
   textDiv.innerHTML = question.Question;
-  element.appendChild(textDiv);
+  result.appendChild(textDiv);
 
   const answerDiv = document.createElement("div");
-  answerDiv.id = 'divAnswer_' + question.num;
+  answerDiv.id = 'divAnswer_' + name;
 
-  options = [
-    {'label': 'Да', 'value': question.Values.Yes},
-    {'label': 'Затрудняюсь ответить', 'value': question.Values.Unknown},
-    {'label': 'Нет', 'value': question.question.Values.No}
-  ]
-  oxftAddRadioInputs(answerDiv, options);
+
+  choice = {
+    'name': 'answer_' + name,
+    'label': 'Ответ',
+    'type': 'radio',
+    'required': true,
+    'options': [
+      {'label': 'Да', 'value': 0},
+      {'label': 'Затрудняюсь ответить', 'value': 1},
+      {'label': 'Нет', 'value': 2}
+    ]
+  }
+
+  answerDiv.appendChild(oxftCreateField(choice));
 
   capacityInput = oxftCreateInput('capacity');
-  capacityInput.type = 'text';
-  capacityInput.value = question.Capacity;
+  capacityInput.type = 'hidden';
+  capacityInput.id = 'capacity_' + name;
 
   answerDiv.appendChild(capacityInput);
 
-  element.appendChild(answerDiv);
+  result.appendChild(answerDiv);
+  return result;
 }
 
-function oxftAskQuestions() {
-  const element = oxftQuestionElement;
+function oxftCreateQuestionsForm(element) {
   const oxftForm = document.createElement("form");
+
+  for(let i = 0; i < 10; i++) {
+    questionDiv = oxftCreateQuestion(i);
+    oxftQuestionsElements.push(questionDiv);
+    oxftForm.appendChild(questionDiv);
+  }
   
   oxftForm.addEventListener('submit', oxftSubmitInstruction);
 
   element.appendChild(oxftForm);
-  element.style.display = 'block';
 }
 
 function oxftStartTest(elemInstr, elemUserInfo, elemQuestion, elemResults) {
@@ -285,7 +300,8 @@ function oxftStartTest(elemInstr, elemUserInfo, elemQuestion, elemResults) {
   oxftUserInfoElement.style.display = 'block';
 
   oxftQuestionElement = elemQuestion;
-  oxftQuestionElement.style.display = 'none';
+  oxftCreateQuestionsForm(oxftQuestionElement);
+  oxftQuestionElement.style.display = 'block';
 
   oxftResultsElement = elemResults;
   oxftResultsElement.style.display = 'none';
