@@ -1,4 +1,8 @@
+const oxftPageSize = 10;
 const oxftQuestionsJSON = 'scripts/questions.json';
+
+const ofxtQuestionStyle = 'questionText';
+
 const oxftInstructionJSON = {
   'title': 'Как заполнять опросный лист',
   'instructions': [
@@ -49,8 +53,8 @@ const oxftUserInfoForm = {
       'required': true,
       'placeholder': 'Ваша пол',
       'options': [
-        {'label': 'Женский', 'value': 'female'},
-        {'label': 'Мужской', 'value': 'male'}
+        {'label': 'Женский', 'id': 'female','value': 'female'},
+        {'label': 'Мужской', 'id': 'male','value': 'male'}
       ]
     },
     
@@ -69,8 +73,6 @@ let oxftInstructionElement;
 let oxftUserInfoElement;
 let oxftQuestionElement;
 let oxftResultsElement;
-let oxftQuestionsElements = [];
-
 
 let oxftQuestions;
 let currentQuestion;
@@ -84,6 +86,7 @@ function oxftLoadQuestions(url) {
   
   request.onload = function () {
     oxftQuestions = request.response;
+    oxftFillQuestionsForm();
   }
 
   request.send();
@@ -136,6 +139,7 @@ function oxftCreateTextInput(name, placeholder='', required=false) {
   let result = oxftCreateInput(name, required);
   result.type = 'text';
   if(placeholder) result.placeholder = placeholder;
+
   return result;
 }
 
@@ -154,10 +158,10 @@ function oxftAddRadioInputs(element, name, required, options) {
     let optionInput = oxftCreateInput(name, required);
     optionInput.type = 'radio';
     optionInput.value = options[i].value;
-    optionInput.id = options[i].value;
+    optionInput.id = options[i].id;
     element.appendChild(optionInput);
 
-    let optionLabel = oxftCreateLabel(options[i].label, options[i].value);
+    let optionLabel = oxftCreateLabel(options[i].label, options[i].id);
     element.appendChild(optionLabel);
   }
 }
@@ -243,7 +247,7 @@ function oxftCreateQuestion(name) {
   const result = document.createElement("div");
   const textDiv = document.createElement("div");
   textDiv.id = 'divText_' + name;
-  textDiv.innerHTML = question.Question;
+  textDiv.className = ofxtQuestionStyle;
   result.appendChild(textDiv);
 
   const answerDiv = document.createElement("div");
@@ -252,13 +256,13 @@ function oxftCreateQuestion(name) {
 
   choice = {
     'name': 'answer_' + name,
-    'label': 'Ответ',
+    'label': '',
     'type': 'radio',
     'required': true,
     'options': [
-      {'label': 'Да', 'value': 0},
-      {'label': 'Затрудняюсь ответить', 'value': 1},
-      {'label': 'Нет', 'value': 2}
+      {'label': 'Да', 'id': 'yes_' + name, 'value': 0},
+      {'label': 'Затрудняюсь ответить', 'id': 'unknown_' + name, 'value': 1},
+      {'label': 'Нет', 'id': 'no_' + name, 'value': 2}
     ]
   }
 
@@ -274,23 +278,39 @@ function oxftCreateQuestion(name) {
   return result;
 }
 
+function oxftSubmitQuestionsForm(event) {
+  event.preventDefault();
+}
+
+
 function oxftCreateQuestionsForm(element) {
   const oxftForm = document.createElement("form");
 
-  for(let i = 0; i < 10; i++) {
-    questionDiv = oxftCreateQuestion(i);
-    oxftQuestionsElements.push(questionDiv);
+  for(let i = 0; i < oxftPageSize; i++) {
+    let questionDiv = oxftCreateQuestion(i);
     oxftForm.appendChild(questionDiv);
   }
-  
-  oxftForm.addEventListener('submit', oxftSubmitInstruction);
+ 
+  oxftForm.appendChild(oxftCreateButton('Далее'));
+
+  oxftForm.addEventListener('submit', oxftSubmitQuestionsForm);
 
   element.appendChild(oxftForm);
 }
 
-function oxftStartTest(elemInstr, elemUserInfo, elemQuestion, elemResults) {
-  oxftLoadQuestions(oxftQuestionsJSON);
+function oxftFillQuestionsForm(page) {
+  for(let i = 0; i < oxftPageSize; i++){
+    let question = oxftQuestions[page * oxftPageSize + i];
+    document.getElementById("divText_" + i).innerHTML = question.Num + '.&nbsp;' + question.Question;
+    document.getElementById('yes_' + i).setAttribute('value', question.Values.Yes);
+    document.getElementById('unknown_' + i).setAttribute('value', question.Values.Unknown);
+    document.getElementById('no_' + i).setAttribute('value', question.Values.No);
+    document.getElementById('capacity_' + i).setAttribute('value', question.Capacity);
+  }
+}
 
+
+function oxftStartTest(elemInstr, elemUserInfo, elemQuestion, elemResults) {
   oxftInstructionElement = elemInstr;
   oxftInstructionElement.style.display = 'block';
   oxftCreateInstruction(oxftInstructionElement);
@@ -306,59 +326,6 @@ function oxftStartTest(elemInstr, elemUserInfo, elemQuestion, elemResults) {
   oxftResultsElement = elemResults;
   oxftResultsElement.style.display = 'none';
 
+  oxftLoadQuestions(oxftQuestionsJSON);
+
 }
-
-
-
-// function oxftSubmitInstruction() {
-//   document.getElementById('instruction').style.display = 'none';
-//   document.getElementById('question').style.display = 'block';
-//   currentQuestion = 0;
-//   askQuestion(questions[currentQuestion]);
-// }
-
-// function oxftSubmitParticipant() {
-//   document.getElementById('participant').style.display = 'none';
-//   document.getElementById('instruction').style.display = 'block';
-//   getQuestions();
-// }
-
-// function oxftAskQuestion(question) {
-//   document.getElementById('questionText').innerText = question.Question;
-//   document.getElementById('yes').setAttribute('value', question.Values.Yes);
-//   document.getElementById('unknown').setAttribute('value', question.Values.Unknown);
-//   document.getElementById('no').setAttribute('value', question.Values.No);
-//   document.getElementById('capacity').setAttribute('value', question.Capacity);
-// }
-
-// function oxftGetAnswer() {
-//   var elements = document.getElementsByName('answer');
-//   for(var i = 0; i < elements.length; i++) {
-//     if (elements[i].checked) {
-//       result = elements[i].value;
-//     }
-//   }
-//   return result;
-// }
-
-// function oxftSubmitAnswer() {
-//   var answer = {
-//     'Question': questions[currentQuestion],
-//     'Capacity': questions[currentQuestion].Capacity,
-//     'Value': getAnswer()
-//   }
-//   answers.push(answer);
-//   if(currentQuestion >= 5) {
-//     displayResults()
-//   }
-//   currentQuestion++;
-// }
-
-// function oxftDisplayResults() {
-//   resultDiv = document.getElementById('results');
-//   for(var i = 0; i < answers.length; i++) {
-//     div = document.createElement('div')
-//     div.innerText = answers[i].Question.Question + ': ' + answers[i].Value;
-//     resultDiv.appendChild(div);
-//   }
-// }
