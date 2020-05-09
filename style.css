@@ -63,7 +63,7 @@ ol {
 }
 
 div {
-    margin: 2em 1em;
+    margin: 1em;
 }
 
 button {
@@ -77,4 +77,5 @@ button {
 
 .questionText {
     font-weight: bold;
+    margin-top: 2em;
 }

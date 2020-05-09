@@ -1,5 +1,9 @@
-const oxftPageSize = 10;
-const oxftQuestionsJSON = 'scripts/questions.json';
+const oxftPageSize = 5;
+const oxftQuestionsJSON = 'json/questions.json';
+const oxftWomenJSON = 'json/women.json';
+const oxftMenJSON = 'json/men.json';
+const oxftBoysJSON = 'json/boys.json';
+const oxftGirlsJSON = 'json/girls.json';
 
 const ofxtQuestionStyle = 'questionText';
 
@@ -75,8 +79,19 @@ let oxftQuestionElement;
 let oxftResultsElement;
 
 let oxftQuestions;
-let currentQuestion;
-let answers = [];
+let oxftRanges;
+let oxftAnswers = {
+  'A': 0,
+  'B': 0,
+  'C': 0,
+  'D': 0,
+  'E': 0,
+  'F': 0,
+  'G': 0,
+  'H': 0,
+  'I': 0,
+  'J': 0
+};
 
 function oxftLoadQuestions(url) {
   const request = new XMLHttpRequest();
@@ -87,10 +102,25 @@ function oxftLoadQuestions(url) {
   request.onload = function () {
     oxftQuestions = request.response;
     oxftFillQuestionsForm();
+    oxftUserInfoElement.style.display = 'block';
   }
 
   request.send();
 }
+
+function oxftLoadRanges(url) {
+  const request = new XMLHttpRequest();
+
+  request.open('GET', url);
+  request.responseType = 'json';
+  
+  request.onload = function () {
+    oxftRanges = request.response;
+  }
+
+  request.send();
+}
+
 
 function oxftCreateButton(caption) {
   result = document.createElement("button");
@@ -208,8 +238,29 @@ function oxftSubmitUserInfo(event) {
     if(sexInputs[i].checked)
       oxftUserInfo.sex = sexInputs[i].value;
   }
+  
+  let json = '';
+
+  if(oxftUserInfo.sex == 'female') {
+    if(oxftUserInfo.age > 18) {
+      json = oxftWomenJSON;
+    }
+    else {
+      json = oxftGirlsJSON;
+    }
+  }
+  else if(oxftUserInfo.sex == 'male') {
+    if(oxftUserInfo.age > 18) {
+      json = oxftMenJSON;
+    }
+    else {
+      json = oxftBoysJSON;
+    }
+  }
+  oxftLoadRanges(json);
 
   oxftUserInfoElement.style.display = 'none';
+  oxftInstructionElement.style.display = 'block';
 
   event.preventDefault();
 }
@@ -227,6 +278,7 @@ function oxftCreateUserInfoForm(element) {
 
 function oxftSubmitInstruction(event) {
   oxftInstructionElement.style.display = 'none';
+  oxftQuestionElement.style.display = 'block';
 
   event.preventDefault();
 }
@@ -245,6 +297,7 @@ function oxftCreateInstruction(element) {
 
 function oxftCreateQuestion(name) {
   const result = document.createElement("div");
+  result.id = 'div_' + name;
   const textDiv = document.createElement("div");
   textDiv.id = 'divText_' + name;
   textDiv.className = ofxtQuestionStyle;
@@ -258,7 +311,7 @@ function oxftCreateQuestion(name) {
     'name': 'answer_' + name,
     'label': '',
     'type': 'radio',
-    'required': true,
+    'required': false,
     'options': [
       {'label': 'Да', 'id': 'yes_' + name, 'value': 0},
       {'label': 'Затрудняюсь ответить', 'id': 'unknown_' + name, 'value': 1},
@@ -279,6 +332,28 @@ function oxftCreateQuestion(name) {
 }
 
 function oxftSubmitQuestionsForm(event) {
+  const pageInput = document.getElementById('oxftPage');
+  pageNum = pageInput.value;
+
+  for(let i = 0; i < oxftPageSize; i++){
+    let answer = 0;
+    let answerElements = document.getElementsByName('inp_answer_' + i);
+    for(let j = 0; j < answerElements.length; j++){
+      if(answerElements[j].checked)
+        answer = answerElements[j].value;
+    }
+    let capacity = document.getElementById('capacity_' + i).value;
+    oxftAnswers[capacity] = oxftAnswers[capacity] + parseInt(answer);
+  }
+
+
+  if(pageNum < oxftQuestions.length / oxftPageSize){
+    pageNum++;
+    pageInput.value = pageNum;
+    oxftFillQuestionsForm();
+  }
+
+  event.target.reset();
   event.preventDefault();
 }
 
@@ -291,6 +366,12 @@ function oxftCreateQuestionsForm(element) {
     oxftForm.appendChild(questionDiv);
   }
  
+  const pageInput = oxftCreateInput('oxftPage');
+  pageInput.type = 'hidden';
+  pageInput.id = 'oxftPage';
+  pageInput.value = 1;
+
+  oxftForm.appendChild(pageInput);
   oxftForm.appendChild(oxftCreateButton('Далее'));
 
   oxftForm.addEventListener('submit', oxftSubmitQuestionsForm);
@@ -298,30 +379,38 @@ function oxftCreateQuestionsForm(element) {
   element.appendChild(oxftForm);
 }
 
-function oxftFillQuestionsForm(page) {
+function oxftFillQuestionsForm() {
+  const pageInput = document.getElementById('oxftPage');
+  const page = pageInput.value;
+
   for(let i = 0; i < oxftPageSize; i++){
-    let question = oxftQuestions[page * oxftPageSize + i];
-    document.getElementById("divText_" + i).innerHTML = question.Num + '.&nbsp;' + question.Question;
-    document.getElementById('yes_' + i).setAttribute('value', question.Values.Yes);
-    document.getElementById('unknown_' + i).setAttribute('value', question.Values.Unknown);
-    document.getElementById('no_' + i).setAttribute('value', question.Values.No);
-    document.getElementById('capacity_' + i).setAttribute('value', question.Capacity);
+    questionNum = (page - 1) * oxftPageSize  + i;
+    if(questionNum < oxftQuestions.length){
+      let question = oxftQuestions[questionNum];
+      document.getElementById("divText_" + i).innerHTML = question.Num + '.&nbsp;' + question.Question;
+      document.getElementById('yes_' + i).setAttribute('value', question.Values.Yes);
+      document.getElementById('unknown_' + i).setAttribute('value', question.Values.Unknown);
+      document.getElementById('no_' + i).setAttribute('value', question.Values.No);
+      document.getElementById('capacity_' + i).setAttribute('value', question.Capacity);
+    }
+    else {
+      document.getElementById("div_" + i).style.display = 'none';
+    }
   }
 }
 
-
 function oxftStartTest(elemInstr, elemUserInfo, elemQuestion, elemResults) {
   oxftInstructionElement = elemInstr;
-  oxftInstructionElement.style.display = 'block';
+  oxftInstructionElement.style.display = 'none';
   oxftCreateInstruction(oxftInstructionElement);
 
   oxftUserInfoElement = elemUserInfo;
   oxftCreateUserInfoForm(oxftUserInfoElement);
-  oxftUserInfoElement.style.display = 'block';
+  oxftUserInfoElement.style.display = 'none';
 
   oxftQuestionElement = elemQuestion;
   oxftCreateQuestionsForm(oxftQuestionElement);
-  oxftQuestionElement.style.display = 'block';
+  oxftQuestionElement.style.display = 'none';
 
   oxftResultsElement = elemResults;
   oxftResultsElement.style.display = 'none';
