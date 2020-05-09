@@ -1,0 +1,76 @@
+body {
+    color: #333;
+}
+
+.instruction {
+    padding: 1em;
+    box-shadow: 2px 2px 4px lightslategray;
+    max-width: 500px;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
+    font-size: larger;
+}
+
+h2 {
+    text-align: center;
+    font-size: larger;
+    font-weight: normal;
+}
+
+#instruction {
+    display: none;
+}
+
+#question {
+    display: none;
+}
+
+.inputForm {
+    margin: auto;
+    padding: 1em;
+    box-shadow: 2px 2px 4px lightslategray;
+    max-width: 500px;
+}
+
+ol {
+    padding-inline-start: 1em;
+}
+
+.inputForm ul {
+    padding: 0;
+
+}
+
+.inputForm li {
+   display: flex;
+   list-style: none;
+   margin: 1em;
+}
+
+.inputForm li > input {
+    flex: 1;
+}
+
+.inputForm li > input[type="radio"] {
+    flex: none;
+}
+
+.inputForm li > label {
+    padding-right: 1em;
+}
+
+div {
+    margin: 1em;
+}
+
+button {
+    display: block;
+    margin: auto;
+    padding: .5em;
+    background: gray;
+    color: white;
+    border: 0;
+}

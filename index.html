@@ -3,19 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="scripts/oxford-test.js"></script>
     <title>Document</title>
 </head>
 <body>
-<script>
-    var requestURL = 'scripts/questions.json';
-    var request = new XMLHttpRequest();
-    request.open('GET', requestURL);
-    request.responseType = 'json';
-    request.send();
-
-    request.onload = function() {
-        alert("OnLoad")
-    }
-</script>    
+    <main>
+        <h1>Оксфордский тест анализа особенностей</h1>
+        <section id="instruction" class="instruction">
+            <!-- <form onsubmit="submitInstruction();return false;">
+                <h2>Как заполнять опросный лист</h2>
+                <ol>
+                    <li>Убедитесь в том, что понимаете вопрос. Прочтите его столько раз, сколько Вам необходимо.</li>
+                    <li>Пожалуйста, ответьте на каждый вопрос.</li>
+                    <li>Не задерживайтесь слишком долго на одном вопросе. Ответьте на вопрос сразу же, как только Вы его поняли, и переходите к следующему вопросу.</li>
+                    <li>Когда ответ будет разным, в зависимости от того, рассматриваете ли Вы прошлое или настоящее, отвечайте по отношению к настоящему времени.</li>
+                    <li>Для отметки Вашего ответа на опросном листе у Вас есть колонки. 
+                        Плюс (+) означает в основном "да", или решительное "да". 
+                        Середина (М) означает неуверенность, может быть не определено "да" или "нет". 
+                        Минус означает в основном "нет", или решительное "нет".
+                    </li>
+                </ol>
+                <button id="btnSubmitInstruction" disabled>Далее</button>
+            </form> -->
+        </section>
+        <section id="userInfo" class="inputForm">
+            <!-- <form name="participant" onsubmit="submitParticipant();return false;">
+                <h2>Введите данные для прохождения теста</h2>
+                <ul class="formOL">
+                    <li>
+                        <label for="firstname">Имя</label><input type="text" name="firstname" placeholder="Ваше имя (обязательное поле)" required>
+                    </li>
+                    <li>
+                        <label for="lastname">Фамилия</label><input type="text" placeholder="Ваша фамилия" name="lastname">
+                    </li>
+                    <li>
+                        <label for="age">Возраст</label><input type="number" name="age" min="14" placeholder="Ваш возраст (обязательное поле)" required>
+                    </li>
+                    <li>
+                        <label>Ваш пол: </label>
+                        <input id="woman" type="radio" name="sex" required><label for="woman">Женский</label>
+                        <input id="man" type="radio" name="sex" required><label for="man">Мужской</label>
+                    </li>
+                    <li>
+                        <label for="occupation">Профессия</label><input type="text" name="occupation" placeholder="Ваша профессия" >
+                    </li>
+                </ol>
+                <button type="submit">Далее</button>
+            </form> -->
+        </section>
+        <section id="question" class="inputForm">
+            <!-- <form onsubmit="submitAnswer();this.reset(); return false;">
+                <div id="questionText"></div>
+                <div>
+                    <input id="yes" type="radio" name="answer" required><label for="yes">Да</label>
+                    <input id="unknown" type="radio" name="answer" required><label for="unknown">Затрудняюсь ответить</label>
+                    <input id="no" type="radio" name="answer" required><label for="no">Нет</label>
+                    <input id="capacity" type="hidden" name="capacity">
+                </div>
+                <button type="submit">Далее</button>
+            </form> -->
+        </section>
+        <section id="results" class="results">
+            <!-- <div id="results"></div> -->
+        </section>
+        <section id="info" class="results">
+            <!-- <div id="results"></div> -->
+        </section>
+    </main>
+    <script>
+        sectionInstr = document.getElementById("instruction");
+        sectionUserInfo = document.getElementById("userInfo");
+        sectionQuestion = document.getElementById("question");
+        sectionResults = document.getElementById("results");
+        secitonInfo =  document.getElementById("info");
+        oxftStartTest(sectionInstr, sectionUserInfo, sectionQuestion, sectionResults);
+    </script>
 </body>
 </html>
