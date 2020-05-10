@@ -12,7 +12,7 @@ export const parameters = {
         'element': null,
         'json': 'json/questions.json',
         "className": 'questionText',
-        pageSize: 5
+        pageSize: 10
     },
     'results': {
         'element': null,
@@ -42,6 +42,20 @@ export const capacityAnswers = {
     'I': 0,
     'J': 0
 };
+
+export const capacityResults = {
+    'A': 0,
+    'B': 0,
+    'C': 0,
+    'D': 0,
+    'E': 0,
+    'F': 0,
+    'G': 0,
+    'H': 0,
+    'I': 0,
+    'J': 0
+};
+
 
 const instruction = {
     'title': 'Как заполнять опросный лист',
@@ -149,7 +163,7 @@ function loadRanges(userInfo) {
     request.responseType = 'json';
 
     request.onload = function () {
-    ranges = request.response;
+        ranges = request.response;
     }
 
     request.send();
@@ -222,7 +236,7 @@ function createQuestion(name) {
         'name': 'answer_' + name,
         'label': '',
         'type': 'radio',
-        'required': false,
+        'required': true,
         'options': [
             {'label': 'Да', 'id': 'yes_' + name, 'value': 0},
             {'label': 'Затрудняюсь ответить', 'id': 'unknown_' + name, 'value': 1},
@@ -267,6 +281,12 @@ function submitQuestionsForm(event) {
     if(pageNum < questions.length / parameters.questions.pageSize){
         pageInput.value = pageNum + 1;
         fillQuestionsForm();
+    }
+    else {
+        calculateResults();
+        showResults();
+        parameters.questions.element.style.display = 'none';
+        parameters.results.element.style.display = 'block';
     }
 
     event.target.reset();
@@ -313,6 +333,51 @@ function fillQuestionsForm() {
             document.getElementById("div_" + i).style.display = 'none';
         }
     }
+}
+
+function calculateResults() {
+    capacityResults.A = ranges.A[capacityAnswers.A];
+    capacityResults.B = ranges.B[capacityAnswers.B];
+    capacityResults.C = ranges.C[capacityAnswers.C];
+    capacityResults.D = ranges.D[capacityAnswers.D];
+    capacityResults.E = ranges.E[capacityAnswers.E];
+    capacityResults.F = ranges.F[capacityAnswers.F];
+    capacityResults.G = ranges.G[capacityAnswers.G];
+    capacityResults.H = ranges.H[capacityAnswers.H];
+    capacityResults.I = ranges.I[capacityAnswers.I];
+    capacityResults.J = ranges.A[capacityAnswers.J];
+}
+
+function showResults() {
+    const points = [];
+    const percents = [];
+    parameters.results.element.appendChild(common.createHeader("Результаты", 'h2'));
+
+    parameters.results.element.appendChild(common.createHeader("Набранные очки", 'h3'));
+    points.push('A: ' + capacityAnswers['A']);
+    points.push('B: ' + capacityAnswers['B']);
+    points.push('C: ' + capacityAnswers['C']);
+    points.push('D: ' + capacityAnswers['D']);
+    points.push('E: ' + capacityAnswers['E']);
+    points.push('F: ' + capacityAnswers['F']);
+    points.push('G: ' + capacityAnswers['G']);
+    points.push('H: ' + capacityAnswers['H']);
+    points.push('I: ' + capacityAnswers['I']);
+    points.push('J: ' + capacityAnswers['J']);
+    parameters.results.element.appendChild(common.createList(points, 'ol'));
+
+    parameters.results.element.appendChild(common.createHeader("Проценты", 'h3'));
+    percents.push('A: ' + capacityResults['A']);
+    percents.push('B: ' + capacityResults['B']);
+    percents.push('C: ' + capacityResults['C']);
+    percents.push('D: ' + capacityResults['D']);
+    percents.push('E: ' + capacityResults['E']);
+    percents.push('F: ' + capacityResults['F']);
+    percents.push('G: ' + capacityResults['G']);
+    percents.push('H: ' + capacityResults['H']);
+    percents.push('I: ' + capacityResults['I']);
+    percents.push('J: ' + capacityResults['J']);
+    parameters.results.element.appendChild(common.createList(percents, 'ol'));
 }
 
 export function startTest() {

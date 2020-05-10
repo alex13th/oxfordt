@@ -8,8 +8,8 @@ export function createButton(caption) {
     return result;
 }
   
-export function createHeader(text) {
-    const result = parameters.document.createElement("h2");
+export function createHeader(text, type='h2') {
+    const result = parameters.document.createElement(type);
     result.innerHTML = text;
 
     return result;
@@ -66,7 +66,7 @@ export function createNumberInput(name, placeholder='', value=null, required=fal
   
 export function addRadioInputs(element, name, value=null, required, options) {
     for(let i = 0; i < options.length; i++) {
-        let optionInput = createInput(name, 'radio', required);
+        let optionInput = createInput(name, 'radio', value, required);
         optionInput.value = options[i].value;
         optionInput.id = options[i].id;
         optionInput.checked = (options[i].value == value)
