@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
-    <script src="scripts/oxford-test.js"></script>
+    <script type="module" src="./scripts/common.js"></script>
+    <script type="module" src="./scripts/oxford-test.js"></script>
     <title>Document</title>
 </head>
 <body>
@@ -21,13 +22,27 @@
         <section id="info" class="results">
         </section>
     </main>
-    <script>
-        sectionInstr = document.getElementById("instruction");
-        sectionUserInfo = document.getElementById("userInfo");
-        sectionQuestion = document.getElementById("question");
-        sectionResults = document.getElementById("results");
-        secitonInfo =  document.getElementById("info");
-        oxftStartTest(sectionInstr, sectionUserInfo, sectionQuestion, sectionResults);
+    <script type="module">
+        import * as oxft from './scripts/oxford-test.js'
+        let sectionInstr = document.getElementById("instruction");
+        let sectionUserInfo = document.getElementById("userInfo");
+        let sectionQuestion = document.getElementById("question");
+        let sectionResults = document.getElementById("results");
+        let secitonInfo =  document.getElementById("info");
+
+        oxft.parameters.document = document;
+        oxft.parameters.instruction.element = sectionInstr;
+        oxft.parameters.userInfo.element = sectionUserInfo;
+        oxft.parameters.questions.element = sectionQuestion;
+        oxft.parameters.results.element = secitonInfo;
+
+        oxft.userInfo.firstname = 'Алексей';
+        oxft.userInfo.lastname = 'Сухарев';
+        oxft.userInfo.age = 43;
+        oxft.userInfo.sex = 'male';
+        oxft.userInfo.occupation = 'Инженер';
+
+        oxft.startTest();
     </script>
 </body>
 </html>
