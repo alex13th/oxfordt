@@ -1,4 +1,5 @@
 import * as common from './common.js';
+import * as chart from './chart.js';
 
 export const parameters = {
     'document': null,
@@ -12,7 +13,7 @@ export const parameters = {
         'element': null,
         'json': 'json/questions.json',
         "className": 'questionText',
-        pageSize: 10
+        pageSize: 20
     },
     'results': {
         'element': null,
@@ -20,8 +21,94 @@ export const parameters = {
         'menJSON': 'json/men.json',
         'boysJSON': 'json/boys.json',
         'girlsJSON': 'json/girls.json'
+    },
+    'chart': {
+        'options': {
+            height: '100%',
+            width: '100%',
+            topPadding: 0,
+            leftPadding: 200, // Подумать как расчитать от параметров вертикальной оси
+            chartArea: {
+                style: {
+                    width: 3,
+                    color: 'black',
+                    className: 'rectChart'
+                }                
+            },
+            hAxis: {
+                position: 10,
+                style: {
+                    width: 3,
+                    color: 'gray',
+                    className: 'axisLine'
+                }
+            },
+            vAxis: {
+                position: 0,
+                style: {
+                    width: 3,
+                    color: 'gray',
+                    className: 'axisLine'
+                }
+            },
+            hGrid: {
+                step: 100,
+                count: 21,
+                offset: 0,
+                extend: 200,
+                style: {
+                    width: 5,
+                    color: 'gray',
+                    className: 'gridLine'
+                },
+                dataLabels: {
+                    labels: ['+100', '+90','+80','+70','+60','+50','+40','+30','+20','+10',
+                    '0', '-10', '-20', '-30', '-40', '-50', '-60', '-70', '-80', '-90', '-100'],
+                    style: {
+                        fontSize: 70,
+                        color: 'gray',
+                        anchor: 'end',
+                        offset: 140, // Подумать о замене на расчетный от leftPadding
+                        className: ''
+                    }
+                }
+            },
+            vGrid: {
+                step: 400,
+                count: 10,
+                offset: 200,
+                style: {
+                    width: 5,
+                    color: 'gray',
+                    className: 'gridLine'
+                },
+                dataLabels: {
+                    labels: ['A','B','C','D','E','F','G','H','I', 'J'],
+                    style: {
+                        fontSize: 70,
+                        color: 'gray',
+                        anchor: 'middle',
+                        offset: 0,
+                        height: 200,
+                        className: 'rectLabel'
+                    }
+                }
+            },
+            graph: {
+                line: {
+                    width: 10,
+                    color: "navy",
+                    className: ''
+                },
+                point: {
+                    radius: 20,
+                    color: 'maroon',
+                }
+            }
+        }
     }
 }
+
 export const userInfo = {
     'firstname': '',
     'lastname': '',
@@ -30,18 +117,7 @@ export const userInfo = {
     'occupation': ''
 };
 export const answers = [];
-export const capacityAnswers = {
-    'A': 0,
-    'B': 0,
-    'C': 0,
-    'D': 0,
-    'E': 0,
-    'F': 0,
-    'G': 0,
-    'H': 0,
-    'I': 0,
-    'J': 0
-};
+export const capacityAnswers = {'A': 0, 'B': 0,'C': 0, 'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0,'I': 0, 'J': 0};
 
 export const capacityResults = {
     'A': 0,
@@ -284,7 +360,7 @@ function submitQuestionsForm(event) {
     }
     else {
         calculateResults();
-        showResults();
+        showResults(parameters.results.element);
         parameters.questions.element.style.display = 'none';
         parameters.results.element.style.display = 'block';
     }
@@ -348,12 +424,17 @@ function calculateResults() {
     capacityResults.J = ranges.A[capacityAnswers.J];
 }
 
-function showResults() {
+function showResults(element) {
     const points = [];
     const percents = [];
-    parameters.results.element.appendChild(common.createHeader("Результаты", 'h2'));
+    const resultDiv = document.createElement("div");
+    resultDiv.style.display = 'flex';
+    const pointsDiv = document.createElement("div");
+    const percentsDiv = document.createElement("div");
+    const chartDiv = document.createElement("div");
 
-    parameters.results.element.appendChild(common.createHeader("Набранные очки", 'h3'));
+    pointsDiv.appendChild(common.createHeader("Набранные очки", 'h2'));
+    pointsDiv.style.flex = '1';
     points.push('A: ' + capacityAnswers['A']);
     points.push('B: ' + capacityAnswers['B']);
     points.push('C: ' + capacityAnswers['C']);
@@ -364,9 +445,11 @@ function showResults() {
     points.push('H: ' + capacityAnswers['H']);
     points.push('I: ' + capacityAnswers['I']);
     points.push('J: ' + capacityAnswers['J']);
-    parameters.results.element.appendChild(common.createList(points, 'ol'));
+    pointsDiv.appendChild(common.createList(points));
+    resultDiv.appendChild(pointsDiv);
 
-    parameters.results.element.appendChild(common.createHeader("Проценты", 'h3'));
+    percentsDiv.appendChild(common.createHeader("Проценты", 'h2'));
+    percentsDiv.style.flex = '1';
     percents.push('A: ' + capacityResults['A']);
     percents.push('B: ' + capacityResults['B']);
     percents.push('C: ' + capacityResults['C']);
@@ -377,11 +460,33 @@ function showResults() {
     percents.push('H: ' + capacityResults['H']);
     percents.push('I: ' + capacityResults['I']);
     percents.push('J: ' + capacityResults['J']);
-    parameters.results.element.appendChild(common.createList(percents, 'ol'));
+    percentsDiv.appendChild(common.createList(percents));
+    resultDiv.appendChild(percentsDiv);
+
+    showChart(chartDiv);
+
+    element.appendChild(chartDiv);
+    element.appendChild(resultDiv);
+}
+
+
+function showChart(element) {
+ 
+    const percents = [];
+    percents.push(capacityResults['A']);
+    percents.push(capacityResults['B']);
+    percents.push(capacityResults['C']);
+    percents.push(capacityResults['D']);
+    percents.push(capacityResults['E']);
+    percents.push(capacityResults['F']);
+    percents.push(capacityResults['G']);
+    percents.push(capacityResults['H']);
+    percents.push(capacityResults['I']);
+    percents.push(capacityResults['J']);
+    chart.drawChart(element, percents, parameters.chart.options);
 }
 
 export function startTest() {
-    
     userInfoForm.questions[0].value = userInfo.firstname;
     userInfoForm.questions[1].value = userInfo.lastname;
     userInfoForm.questions[2].value = userInfo.age;

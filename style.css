@@ -5,7 +5,7 @@ body {
 .instruction {
     padding: 1em;
     box-shadow: 2px 2px 4px lightslategray;
-    max-width: 500px;
+    max-width: 1000px;
     margin: auto;
 }
 
@@ -78,4 +78,34 @@ button {
 .questionText {
     font-weight: bold;
     margin-top: 2em;
+}
+
+.rectChart {
+    fill: white;
+}
+
+.axisLine {
+    stroke: #333;
+    /* stroke-width: 3px; */
+}
+
+.gridLine {
+    stroke: gray;
+    /* stroke-width: 1px; */
+}
+
+.rectLabel {
+    stroke: #555;
+    stroke-width: 1px;
+    fill-opacity: 0;
+}
+
+.results {
+    display: flex;
+    max-width: 800px;
+    margin: auto;
+}
+
+.results > div {
+    flex: 1;
 }

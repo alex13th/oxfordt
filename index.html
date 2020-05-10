@@ -17,9 +17,7 @@
         </section>
         <section id="question" class="inputForm">
         </section>
-        <section id="results" class="inputForm">
-        </section>
-        <section id="info" class="results">
+        <section id="results" class="results">
         </section>
     </main>
     <script type="module">
@@ -28,7 +26,7 @@
         let sectionUserInfo = document.getElementById("userInfo");
         let sectionQuestion = document.getElementById("question");
         let sectionResults = document.getElementById("results");
-        let secitonInfo =  document.getElementById("info");
+        let secitonChart =  document.getElementById("chart");
 
         oxft.parameters.document = document;
         oxft.parameters.instruction.element = sectionInstr;
@@ -39,8 +37,19 @@
         // oxft.userInfo.firstname = 'Алексей';
         // oxft.userInfo.lastname = 'Сухарев';
         // oxft.userInfo.age = 43;
-        // oxft.userInfo.sex = 'male';
+        // oxft.userInfo.sex = 'female';
         // oxft.userInfo.occupation = 'Инженер';
+
+        // oxft.capacityAnswers.A = 105;
+        // oxft.capacityAnswers.B = 111;
+        // oxft.capacityAnswers.C = 88;
+        // oxft.capacityAnswers.D = 91;
+        // oxft.capacityAnswers.E = 100;
+        // oxft.capacityAnswers.F = 97;
+        // oxft.capacityAnswers.G = 89;
+        // oxft.capacityAnswers.H = 106;
+        // oxft.capacityAnswers.I = 90;
+        // oxft.capacityAnswers.J = 99;
 
         oxft.startTest();
     </script>
