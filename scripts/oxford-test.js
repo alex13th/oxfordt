@@ -146,53 +146,59 @@ const instruction = {
 const userInfoForm = {
     'caption': 'Введите данные для прохождения теста',
     'questions': [
-    {
-        'name': 'firstname',
-        'label': 'Имя',
-        'type': 'text',
-        'required': true,
-        'placeholder': 'Ваше имя',
-        'value': ''
-    },
-    {
-        'name': 'lastname',
-        'label': 'Фамилия',
-        'type': 'text',
-        'required': false,
-        'placeholder': 'Ваша фамилия',
-        'value': ''
-    },
-    {
-        'name': 'age',
-        'label': 'Возраст',
-        'type': 'number',
-        'min': 14,
-        'max': 100,
-        'required': true,
-        'placeholder': 'Ваш возраст',
-        'value': null
-    },
-    {
-        'name': 'occupation',
-        'label': 'Профессия',
-        'type': 'text',
-        'required': false,
-        'placeholder': 'Ваша профессия',
-        'value': ''
-    },
-    {
-        'name': 'sex',
-        'label': 'Пол',
-        'type': 'radio',
-        'required': true,
-        'placeholder': 'Ваша пол',
-        'options': [
-            {'label': 'Женский', 'id': 'female','value': 'female'},
-            {'label': 'Мужской', 'id': 'male','value': 'male'}
-        ],
-        'value': ''
-    },
-
+        {
+            'name': 'firstname',
+            'label': 'Имя',
+            'type': 'text',
+            'required': true,
+            'placeholder': 'Ваше имя',
+            'value': ''
+        },
+        {
+            'name': 'lastname',
+            'label': 'Фамилия',
+            'type': 'text',
+            'required': false,
+            'placeholder': 'Ваша фамилия',
+            'value': ''
+        },
+        {
+            'name': 'age',
+            'label': 'Возраст',
+            'type': 'number',
+            'min': 14,
+            'max': 100,
+            'required': true,
+            'placeholder': 'Ваш возраст',
+            'value': null
+        },
+        {
+            'name': 'occupation',
+            'label': 'Профессия',
+            'type': 'text',
+            'required': false,
+            'placeholder': 'Ваша профессия',
+            'value': ''
+        },
+        {
+            'name': 'sex',
+            'label': 'Пол',
+            'type': 'radio',
+            'required': true,
+            'placeholder': 'Ваша пол',
+            'options': [
+                {'label': 'Женский', 'id': 'female','value': 'female'},
+                {'label': 'Мужской', 'id': 'male','value': 'male'}
+            ],
+            'value': ''
+        },
+        {
+            'name': 'save',
+            'label': 'Запомнить',
+            'type': 'checkbox',
+            'required': false,
+            'value': ''
+        }
     ]
 }
 
