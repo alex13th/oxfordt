@@ -4,6 +4,8 @@ import * as chart from './chart.js';
 let questions;
 let ranges;
 
+export let chartSVG;
+
 export const parameters = {
     'document': null,
     'instruction': {
@@ -34,7 +36,7 @@ export const parameters = {
                 style: {
                     width: 3,
                     color: 'black',
-                    className: 'rectChart'
+                    // className: 'rectChart'
                 }                
             },
             hAxis: {
@@ -42,7 +44,7 @@ export const parameters = {
                 style: {
                     width: 3,
                     color: 'gray',
-                    className: 'axisLine'
+                    // className: 'axisLine'
                 }
             },
             vAxis: {
@@ -50,7 +52,7 @@ export const parameters = {
                 style: {
                     width: 3,
                     color: 'gray',
-                    className: 'axisLine'
+                    // className: 'axisLine'
                 }
             },
             hGrid: {
@@ -61,7 +63,7 @@ export const parameters = {
                 style: {
                     width: 5,
                     color: 'gray',
-                    className: 'gridLine'
+                    // className: 'gridLine'
                 },
                 dataLabels: {
                     labels: ['+100', '+90','+80','+70','+60','+50','+40','+30','+20','+10',
@@ -71,7 +73,7 @@ export const parameters = {
                         color: 'gray',
                         anchor: 'end',
                         offset: 140, // Подумать о замене на расчетный от leftPadding
-                        className: ''
+                        // className: ''
                     }
                 }
             },
@@ -82,7 +84,7 @@ export const parameters = {
                 style: {
                     width: 5,
                     color: 'gray',
-                    className: 'gridLine'
+                    // className: 'gridLine'
                 },
                 dataLabels: {
                     labels: ['A','B','C','D','E','F','G','H','I', 'J'],
@@ -92,7 +94,7 @@ export const parameters = {
                         anchor: 'middle',
                         offset: 0,
                         height: 200,
-                        className: 'rectLabel'
+                        // className: 'rectLabel'
                     }
                 }
             },
@@ -111,7 +113,7 @@ export const parameters = {
                         fontSize: 70,
                         anchor: 'start',
                         offset: 20,
-                        className: ''
+                        // className: ''
                     }
                 }                
             }
@@ -436,14 +438,27 @@ function calculateResults() {
     }
 }
 
+function clickSaveChartButton() {
+    const exportSVG = document.getElementById('oxftChartDiv').innerHTML;
+
+    const exportLink = document.createElement("a");
+    exportLink.setAttribute("href", 'data:image/svg,' + escape(exportSVG));
+    exportLink.setAttribute("download", "results.svg");
+    document.body.appendChild(exportLink); // Required for FF
+    
+    exportLink.click();
+
+    // window.open('data:image/svg,' + escape(exportSVG));
+}
+
 function showResults(element) {
     const points = [];
     const percents = [];
-    const resultDiv = document.createElement("div");
+    const resultDiv = common.createDiv(null, 'oxftResultDiv');
     resultDiv.style.display = 'flex';
-    const pointsDiv = document.createElement("div");
-    const percentsDiv = document.createElement("div");
-    const chartDiv = document.createElement("div");
+    const pointsDiv = common.createDiv(null, 'oxftPointsDiv');
+    const percentsDiv = common.createDiv(null, 'oxftPercentsDiv');
+    const chartDiv = common.createDiv(null, 'oxftChartDiv');
 
     pointsDiv.appendChild(common.createHeader("Набранные очки", 'h2'));
     pointsDiv.style.flex = '1';
@@ -477,7 +492,15 @@ function showResults(element) {
 
     showChart(chartDiv);
 
+    const buttonsDiv = document.createElement("div");
+    buttonsDiv.id = 'oxftQuestionButtons';
+
+    const saveButton = common.createButton('Сохранить график', 'oxftSave')
+    saveButton.addEventListener('click', clickSaveChartButton);
+    buttonsDiv.appendChild(saveButton);
+
     element.appendChild(chartDiv);
+    element.appendChild(buttonsDiv);
     element.appendChild(resultDiv);
 }
 
@@ -495,7 +518,8 @@ function showChart(element) {
     percents.push(capacityResults['H']);
     percents.push(capacityResults['I']);
     percents.push(capacityResults['J']);
-    chart.drawChart(element, percents, parameters.chart.options);
+    chartSVG = chart.drawChart(null, percents, parameters.chart.options);
+    element.appendChild(chartSVG);
 }
 
 export function startTest() {

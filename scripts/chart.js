@@ -296,6 +296,8 @@ export function drawChart(chartDiv, data, options) {
     setAttributeSVG(chartSVG,  'viewBox', '0 0 ' + chartWidth + ' '  + chartHeight);
     setAttributeSVG(chartSVG,  'stroke', options.chartArea.style.color);
     setAttributeSVG(chartSVG,  'stroke-width', options.chartArea.style.width);
+    setAttributeSVG(chartSVG,  'fill', '#FFF');
+    chartSVG.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
     let mainG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     let mainRect = createRect(0, 0, '100%', '100%', options.chartArea.style);
@@ -332,6 +334,9 @@ export function drawChart(chartDiv, data, options) {
     mainG.appendChild(graphG);
 
     chartSVG.appendChild(mainG);
-    chartDiv.appendChild(chartSVG);
+    if(chartDiv)
+        chartDiv.appendChild(chartSVG);
+
+    return chartSVG;
 }
 

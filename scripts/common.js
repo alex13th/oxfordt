@@ -34,11 +34,12 @@ export function createCheckboxInput(name, label, value, required, className=null
 }
  
 
-export function createDiv(text, className=null) {
+export function createDiv(text=null, id=null, className=null) {
     const result = parameters.document.createElement('div');
-    result.innerHTML = text;
-    if(className)
-        result.className = className;
+
+    if(text) result.innerHTML = text;
+    if(id) result.id = id;
+    if(className) result.className = className;
 
     return result;
 }
