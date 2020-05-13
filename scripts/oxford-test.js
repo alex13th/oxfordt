@@ -35,24 +35,22 @@ export const parameters = {
             chartArea: {
                 style: {
                     width: 3,
-                    color: 'black',
-                    // className: 'rectChart'
+                    color: 'black'
                 }                
             },
             hAxis: {
                 position: 10,
                 style: {
-                    width: 3,
-                    color: 'gray',
-                    // className: 'axisLine'
+                    width: 10,
+                    fill: 'black',
+                    color: 'black'
                 }
             },
             vAxis: {
                 position: 0,
                 style: {
                     width: 3,
-                    color: 'gray',
-                    // className: 'axisLine'
+                    color: 'black'
                 }
             },
             hGrid: {
@@ -61,19 +59,19 @@ export const parameters = {
                 offset: 0,
                 extend: 200,
                 style: {
-                    width: 5,
-                    color: 'gray',
-                    // className: 'gridLine'
+                    width: 3,
+                    color: 'black'
                 },
                 dataLabels: {
                     labels: ['+100', '+90','+80','+70','+60','+50','+40','+30','+20','+10',
                     '0', '-10', '-20', '-30', '-40', '-50', '-60', '-70', '-80', '-90', '-100'],
                     style: {
                         fontSize: 50,
-                        color: 'gray',
+                        color: 'black',
+                        fill: 'black',
+                        opacity: 1,
                         anchor: 'end',
-                        offset: 140, // Подумать о замене на расчетный от leftPadding
-                        // className: ''
+                        offset: 140 // Подумать о замене на расчетный от leftPadding
                     }
                 }
             },
@@ -82,26 +80,31 @@ export const parameters = {
                 count: 10,
                 offset: 200,
                 style: {
-                    width: 5,
-                    color: 'gray',
-                    // className: 'gridLine'
+                    width: 3,
+                    color: 'black'
                 },
                 dataLabels: {
                     labels: ['A','B','C','D','E','F','G','H','I', 'J'],
-                    style: {
-                        fontSize: 70,
-                        color: 'gray',
-                        anchor: 'middle',
-                        offset: 0,
-                        height: 200,
-                        // className: 'rectLabel'
+                    parameters: {
+                        rect: {
+                            fill: 'white',
+                            height: 200
+                        },
+                        style: {
+                            fontSize: 70,
+                            color: 'black',
+                            fill: 'black',
+                            opacity: 1,
+                            anchor: 'middle',
+                            offset: 0,
+                        }
                     }
                 }
             },
             graph: {
                 line: {
                     width: 10,
-                    color: "navy",
+                    color: "#449",
                     className: ''
                 },
                 point: {
@@ -111,9 +114,11 @@ export const parameters = {
                 label: {
                     style: {
                         fontSize: 70,
+                        color: 'black',
+                        fill: 'black',
+                        opacity: 1,
                         anchor: 'start',
-                        offset: 20,
-                        // className: ''
+                        offset: 30
                     }
                 }                
             }
@@ -547,7 +552,6 @@ export function startTest() {
 
 function testQuestionsFunc() {
     questions = this.response;
-    parameters.userInfo.element.style.display = 'block';
     calculateResults();
     showResults(parameters.results.element);
     parameters.questions.element.style.display = 'none';

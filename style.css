@@ -98,25 +98,23 @@ button {
     margin-top: 2em;
 }
 
-.rectChart {
+/* .rectChart {
     fill: white;
 }
 
 .axisLine {
     stroke: #333;
-    /* stroke-width: 3px; */
 }
 
 .gridLine {
     stroke: gray;
-    /* stroke-width: 1px; */
 }
 
 .rectLabel {
     stroke: #555;
     stroke-width: 1px;
     fill-opacity: 0;
-}
+} */
 
 .results {
     display: flex;
