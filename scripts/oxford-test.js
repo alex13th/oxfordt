@@ -12,8 +12,7 @@ export const parameters = {
     'questions': {
         'element': null,
         'json': 'json/questions.json',
-        "className": 'questionText',
-        pageSize: 20
+        "className": 'questionText'
     },
     'results': {
         'element': null,
@@ -117,7 +116,9 @@ export const userInfo = {
     'occupation': ''
 };
 export const answers = [];
-export const capacityAnswers = {'A': 0, 'B': 0,'C': 0, 'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0,'I': 0, 'J': 0};
+export const capacityAnswers = {'A': 0, 'B': 0,'C': 0, 
+    'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0,'I': 0, 'J': 0,
+    'ManicB': 0, 'ManicE': 0};
 
 export const capacityResults = {
     'A': 0,
@@ -205,17 +206,20 @@ const userInfoForm = {
 let questions;
 let ranges;
 
-function loadQuestions(url) {
+function loadQuestionsFunc() {
+    questions = this.response;
+    fillQuestionsForm();
+    parameters.userInfo.element.style.display = 'block';
+
+}
+
+function loadJSON(url, func) {
     const request = new XMLHttpRequest();
 
     request.open('GET', url);
     request.responseType = 'json';
 
-    request.onload = function () {
-        questions = request.response;
-        fillQuestionsForm();
-        parameters.userInfo.element.style.display = 'block';
-    }
+    request.onload = func;
 
     request.send();
 }
@@ -301,67 +305,61 @@ function createInstruction(element) {
     element.appendChild(form);
 }
 
-function createQuestion(name) {
+function createQuestion() {
     const result = document.createElement("div");
-    result.id = 'div_' + name;
+    result.id = 'oxftQuestion';
 
     const textDiv = document.createElement("div");
-    textDiv.id = 'divText_' + name;
+    textDiv.id = 'oxftQuestionText';
     textDiv.className = parameters.questions.className;
 
     result.appendChild(textDiv);
+    const capacityInput = common.createInput('oxftCapacity', 'hidden');
+    const numInput = common.createInput('oxftNum', 'hidden');
 
-    const answerDiv = document.createElement("div");
-    answerDiv.id = 'divAnswer_' + name;
+    const buttonsDiv = document.createElement("div");
+    buttonsDiv.id = 'oxftQuestionButtons';
 
-    const choice = {
-        'name': 'answer_' + name,
-        'label': '',
-        'type': 'radio',
-        'required': true,
-        'options': [
-            {'label': 'Да', 'id': 'yes_' + name, 'value': 0},
-            {'label': 'Затрудняюсь ответить', 'id': 'unknown_' + name, 'value': 1},
-            {'label': 'Нет', 'id': 'no_' + name, 'value': 2}
-        ]
-    }
+    const yesButton = common.createButton('Да', 'oxftYes', 'yes', 'button')
+    yesButton.addEventListener('click', submitYesQuestionForm);
+    buttonsDiv.appendChild(yesButton);
 
-    answerDiv.appendChild(common.createField(choice));
+    const unknownButton = common.createButton('Возможно', 'oxftUnknown', 'unknown', 'button')
+    unknownButton.addEventListener('click', submitUnknownQuestionsForm);
+    buttonsDiv.appendChild(unknownButton);
 
-    const capacityInput = common.createInput('capacity_' + name, 'hidden');
-    const numInput = common.createInput('num_' + name, 'hidden');
+    const noButton = common.createButton('Нет', 'oxftNo', 'no', 'button')
+    noButton.addEventListener('click', submitNoQuestionForm);
+    buttonsDiv.appendChild(noButton);
 
-    answerDiv.appendChild(capacityInput);
-    answerDiv.appendChild(numInput);
+    result.appendChild(capacityInput);
+    result.appendChild(numInput);
+    result.appendChild(buttonsDiv);
 
-    result.appendChild(answerDiv);
     return result;
 }
 
-function submitQuestionsForm(event) {
-    const pageInput = document.getElementById('oxftPageNum');
-    const pageNum = parseInt(pageInput.value);
+function submitQuestion(answer, value) {
+    const answerData = {'num': 0, 'capacity': '', 'value': 0, 'answer': ''}
+    const numInput = document.getElementById('oxftNum');
+    answerData.answer = answer
+    answerData.value = value;
 
-    for(let i = 0; i < parameters.questions.pageSize; i++){
-        const answerElements = document.getElementsByName('inp_answer_' + i);
-        const answer = {'num': 0, 'capacity': '', 'value': 0, 'answer': ''}
+    answerData.num = parseInt(document.getElementById('oxftNum').value);
+    answerData.capacity = document.getElementById('oxftCapacity').value;
 
-        answer.num = document.getElementById('num_' + i).value;
-        answer.capacity = document.getElementById('capacity_' + i).value;
+    capacityAnswers[answerData.capacity] += answerData.value;
 
-        for(let j = 0; j < answerElements.length; j++){
-            if(answerElements[j].checked) {
-                answer.value = parseInt(answerElements[j].value);
-                answer.answer = answerElements[j].id.replace('_' + i, '');
+    if((answerData.num == 197) & (answerData.answer.toUpperCase() == 'YES'))
+        capacityAnswers['ManicB'] = 1;
 
-            }
-        }
-        capacityAnswers[answer.capacity] += answer.value;
-        answers.push(answer);
-    }
+    if((answerData.num == 22) & (answerData.answer.toUpperCase() == 'YES'))
+        capacityAnswers['ManicE'] = 1;
 
-    if(pageNum < questions.length / parameters.questions.pageSize){
-        pageInput.value = pageNum + 1;
+    answers.push(answerData);
+
+    if(answerData.num < questions.length) {
+        numInput.value = answerData.num + 1;
         fillQuestionsForm();
     }
     else {
@@ -370,64 +368,60 @@ function submitQuestionsForm(event) {
         parameters.questions.element.style.display = 'none';
         parameters.results.element.style.display = 'block';
     }
-
-    event.target.reset();
-    event.preventDefault();
 }
 
-function createQuestionsForm(element) {
-    const form = document.createElement("form");
+function submitYesQuestionForm() {
+    const value = parseInt(document.getElementById('oxftYes').value);
+    submitQuestion('yes', value)
+}
 
-    for(let i = 0; i < parameters.questions.pageSize; i++) {
-        const questionDiv = createQuestion(i);
-        form.appendChild(questionDiv);
-    }
+function submitNoQuestionForm() {
+    const value = parseInt(document.getElementById('oxftNo').value);
+    submitQuestion('no', value)
+}
 
-    const pageInput = common.createInput('oxftPageNum', 'hidden');
-    pageInput.id = 'oxftPageNum';
-    pageInput.value = 1;
+function submitUnknownQuestionsForm() {
+    const value = parseInt(document.getElementById('oxftUnknown').value);
+    submitQuestion('unknown', value)
+}
 
-    form.appendChild(pageInput);
-    form.appendChild(common.createButton('Далее'));
-
-    form.addEventListener('submit', submitQuestionsForm);
-
-    element.appendChild(form);
+function createQuestionForm(element) {
+    const questionDiv = createQuestion();
+    element.appendChild(questionDiv);
 }
 
 function fillQuestionsForm() {
-    const pageInput = document.getElementById('oxftPageNum');
-    const page = pageInput.value;
-
-    for(let i = 0; i < parameters.questions.pageSize; i++){
-        let questionNum = (page - 1) * parameters.questions.pageSize  + i;
-
-        if(questionNum < questions.length){
-            let question = questions[questionNum];
-            document.getElementById("divText_" + i).innerHTML = question.Num + '.&nbsp;' + question.Question;
-            document.getElementById('yes_' + i).setAttribute('value', question.Values.Yes);
-            document.getElementById('unknown_' + i).setAttribute('value', question.Values.Unknown);
-            document.getElementById('no_' + i).setAttribute('value', question.Values.No);
-            document.getElementById('capacity_' + i).setAttribute('value', question.Capacity);
-            document.getElementById('num_' + i).setAttribute('value', question.Num);
-        }
-        else {
-            document.getElementById("div_" + i).style.display = 'none';
-        }
+    const numInput = document.getElementById('oxftNum');
+    let questionNum = 1;
+    if(numInput.value) {
+        questionNum = parseInt(numInput.value);
     }
+
+    let question = questions[questionNum - 1];
+    document.getElementById('oxftQuestionText').innerHTML = question.Num + '.&nbsp;' + question.Question;
+    document.getElementById('oxftCapacity').setAttribute('value', question.Capacity);
+    document.getElementById('oxftNum').setAttribute('value', question.Num);
+    document.getElementById('oxftYes').setAttribute('value', question.Values.Yes);
+    document.getElementById('oxftUnknown').setAttribute('value', question.Values.Unknown);
+    document.getElementById('oxftNo').setAttribute('value', question.Values.No);
 }
 
 function calculateResults() {
-    capacityResults.A = ranges.A[capacityAnswers.A];
-    capacityResults.B = ranges.B[capacityAnswers.B];
-    capacityResults.C = ranges.C[capacityAnswers.C];
-    capacityResults.D = ranges.D[capacityAnswers.D];
-    capacityResults.E = ranges.E[capacityAnswers.E];
-    capacityResults.F = ranges.F[capacityAnswers.F];
-    capacityResults.G = ranges.G[capacityAnswers.G];
-    capacityResults.H = ranges.H[capacityAnswers.H];
-    capacityResults.I = ranges.I[capacityAnswers.I];
-    capacityResults.J = ranges.A[capacityAnswers.J];
+    if(ranges) {
+        capacityResults.A = ranges.A[capacityAnswers.A];
+        capacityResults.B = ranges.B[capacityAnswers.B];
+        capacityResults.C = ranges.C[capacityAnswers.C];
+        capacityResults.D = ranges.D[capacityAnswers.D];
+        capacityResults.E = ranges.E[capacityAnswers.E];
+        capacityResults.F = ranges.F[capacityAnswers.F];
+        capacityResults.G = ranges.G[capacityAnswers.G];
+        capacityResults.H = ranges.H[capacityAnswers.H];
+        capacityResults.I = ranges.I[capacityAnswers.I];
+        capacityResults.J = ranges.A[capacityAnswers.J];
+    }
+    else {
+        alert("Ranges еще не загружены"); // Диагностическое сообщение
+    }
 }
 
 function showResults(element) {
@@ -507,9 +501,9 @@ export function startTest() {
     createUserInfoForm(parameters.userInfo.element);
 
     parameters.questions.element.style.display = 'none';
-    createQuestionsForm(parameters.questions.element);
+    createQuestionForm(parameters.questions.element);
 
     parameters.results.element.style.display = 'none';
 
-    loadQuestions(parameters.questions.json);
+    loadJSON(parameters.questions.json, loadQuestionsFunc);
 }

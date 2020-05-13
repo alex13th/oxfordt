@@ -13,12 +13,13 @@ export function addRadioInputs(element, name, options, value=null, required, cla
     }
 }
 
-export function createButton(caption, className=null) {
+export function createButton(caption, id=null, value=null, type='submit', className=null) {
     const result = parameters.document.createElement('button');
     result.innerHTML = caption;
-    result.setAttribute('type', 'submit');
-    if(className)
-        result.className = className;
+    result.setAttribute('type', type);
+    if(id) result.id = id;
+    if(value) result.value = value;
+    if(className) result.className = className;
 
     return result;
 }
