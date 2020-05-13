@@ -1,6 +1,9 @@
 import * as common from './common.js';
 import * as chart from './chart.js';
 
+let questions;
+let ranges;
+
 export const parameters = {
     'document': null,
     'instruction': {
@@ -64,7 +67,7 @@ export const parameters = {
                     labels: ['+100', '+90','+80','+70','+60','+50','+40','+30','+20','+10',
                     '0', '-10', '-20', '-30', '-40', '-50', '-60', '-70', '-80', '-90', '-100'],
                     style: {
-                        fontSize: 70,
+                        fontSize: 50,
                         color: 'gray',
                         anchor: 'end',
                         offset: 140, // Подумать о замене на расчетный от leftPadding
@@ -102,11 +105,19 @@ export const parameters = {
                 point: {
                     radius: 20,
                     color: 'maroon',
-                }
+                },
+                label: {
+                    style: {
+                        fontSize: 70,
+                        anchor: 'start',
+                        offset: 20,
+                        className: ''
+                    }
+                }                
             }
         }
     }
-}
+};
 
 export const userInfo = {
     'firstname': '',
@@ -203,9 +214,6 @@ const userInfoForm = {
     ]
 }
 
-let questions;
-let ranges;
-
 function loadQuestionsFunc() {
     questions = this.response;
     fillQuestionsForm();
@@ -277,10 +285,12 @@ function submitUserInfo(event) {
 
 function createUserInfoForm(element) {
     const form = document.createElement("form");
+    const buttonsDiv = document.createElement("div");
 
     form.appendChild(common.createHeader(userInfoForm.caption));
     form.appendChild(common.createFields(userInfoForm.questions));
-    form.appendChild(common.createButton('Далее'));
+    buttonsDiv.appendChild(common.createButton('Далее'));
+    form.appendChild(buttonsDiv);
     form.addEventListener('submit', submitUserInfo);
 
     element.appendChild(form);
@@ -295,10 +305,12 @@ function submitInstruction(event) {
 
 function createInstruction(element) {
     const form = document.createElement("form");
+    const buttonsDiv = document.createElement("div");
 
     form.appendChild(common.createHeader(instruction.title));
     form.appendChild(common.createList(instruction.instructions, 'ol'));
-    form.appendChild(common.createButton('Далее'));
+    buttonsDiv.appendChild(common.createButton('Далее'));
+    form.appendChild(buttonsDiv);
 
     form.addEventListener('submit', submitInstruction);
 
@@ -506,4 +518,38 @@ export function startTest() {
     parameters.results.element.style.display = 'none';
 
     loadJSON(parameters.questions.json, loadQuestionsFunc);
+}
+
+
+function testQuestionsFunc() {
+    questions = this.response;
+    parameters.userInfo.element.style.display = 'block';
+    calculateResults();
+    showResults(parameters.results.element);
+    parameters.questions.element.style.display = 'none';
+    parameters.results.element.style.display = 'block';
+}
+
+export function testTest() {
+    userInfoForm.questions[0].value = userInfo.firstname;
+    userInfoForm.questions[1].value = userInfo.lastname;
+    userInfoForm.questions[2].value = userInfo.age;
+    userInfoForm.questions[3].value = userInfo.occupation;
+    userInfoForm.questions[4].value = userInfo.sex;
+
+    loadRanges(userInfo);
+
+    common.parameters.document = parameters.document;
+    parameters.instruction.element.style.display = 'none';
+    createInstruction(parameters.instruction.element);
+
+    parameters.userInfo.element.style.display = 'none';
+    createUserInfoForm(parameters.userInfo.element);
+
+    parameters.questions.element.style.display = 'none';
+    createQuestionForm(parameters.questions.element);
+
+    parameters.results.element.style.display = 'none';
+
+    loadJSON(parameters.questions.json, testQuestionsFunc);
 }

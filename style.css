@@ -75,11 +75,8 @@ input {
 }
 
 div {
-    margin: 1em;
-}
-
-#oxftQuestion div {
     text-align: center;
+    margin: 1em;
 }
 
 button {

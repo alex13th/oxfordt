@@ -321,6 +321,7 @@ export function drawChart(chartDiv, data, options) {
         setAttributeSVG(graphPoint, 'r', options.graph.point.radius);
         setAttributeSVG(graphPoint, 'fill', options.graph.point.color);
         graphG.appendChild(graphPoint);
+        graphG.appendChild(createText(data[i], x + options.graph.point.radius / 2, y, options.graph.label.style));
     }
 
     setAttributeSVG(graphPath, 'd', strPath);
