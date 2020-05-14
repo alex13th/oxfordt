@@ -1,12 +1,12 @@
 body {
     color: #555;
     font-family: 'Roboto', sans-serif;;
-    font-size: 1.1em;
+    font-size: 1em;
 }
 
 section {
     display: none;
-    padding: 1em;
+    padding: .2em;
     border-radius: 4px;
     box-shadow: 2px 2px 4px lightslategray;
     max-width: 600px;
@@ -16,7 +16,7 @@ section {
 h1 {
     text-align: center;
     font-size: 1.5em;
-    color: #449;
+    color: lightslategray;
 }
 
 h2 {
@@ -41,11 +41,10 @@ div {
 
 button {
     display: inline;
-    margin: auto;
     font-size: 1em;
     font-weight: bolder;
     padding: .7em;
-    margin: 1em;
+    margin: .5em;
     border-radius: .5em;
     background: lightslategray;
     box-shadow: 2px 2px 4px lightslategray;
@@ -61,7 +60,7 @@ button {
 .inputForm li {
    display: flex;
    list-style: none;
-   margin: 1em;
+   margin: 1em .5em;
 }
 
 .inputForm li > input {
@@ -73,5 +72,5 @@ button {
 }
 
 .inputForm li > label {
-    padding-right: 1em;
+    padding-right: .5em;
 }
