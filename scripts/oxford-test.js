@@ -271,6 +271,13 @@ function calculateResults() {
     }
 }
 
+function clearLocalStorage(event) {
+    localStorage.clear();
+    event.currentTarget.form.reset();
+
+    event.preventDefault();
+}
+
 function clickSaveChartButton() {
     const exportSVG = 'data:image/svg,' + escape(common.getElementById('oxftChartDiv').innerHTML);
     let exportLink = common.getElementById("osftResultA");
@@ -297,16 +304,15 @@ function createUserInfoForm() {
     form.appendChild(common.createFields(userInfoForm.questions));
     form.appendChild(buttonsDiv);
 
+    if(userInfo.firstname) {
+        const clearButton = common.createButton('Очистить');
+        clearButton.addEventListener('click', clearLocalStorage);
+        buttonsDiv.appendChild(clearButton);
+    }
+
     form.addEventListener('submit', submitUserInfo);
 
     return form;
-}
-
-function submitInstruction(event) {
-    parameters.instruction.element.style.display = 'none';
-    parameters.questions.element.style.display = 'block';
-
-    event.preventDefault();
 }
 
 function createInstruction() {
@@ -350,12 +356,27 @@ function createQuestion() {
     return result;
 }
 
-function fillQuestionForm() {
-    const numInput = document.getElementById('oxftNum');
+function commitAnswer(answerData) {
+    capacityAnswers[answerData.capacity] += answerData.value;
 
+    if((answerData.num == 197) & (answerData.answer.toUpperCase() == 'YES'))
+        capacityAnswers['ManicB'] = 1;
+
+    if((answerData.num == 22) & (answerData.answer.toUpperCase() == 'YES'))
+        capacityAnswers['ManicE'] = 1;
+
+    answers.push(answerData);
+    
+    saveAnswerToLocalStorage(answerData);
+}
+
+function fillQuestionForm() {
     let questionNum = 1;
-    if(numInput.value) {
-        questionNum = parseInt(numInput.value);
+    if(answers.length == questions.length) {
+        return false
+    }
+    else if(answers.length > 0) {
+        questionNum = answers[answers.length - 1].num + 1;
     }
 
     const question = questions[questionNum - 1];
@@ -366,6 +387,8 @@ function fillQuestionForm() {
     common.getElementById('oxftYes').setAttribute('value', question.Values.Yes);
     common.getElementById('oxftUnknown').setAttribute('value', question.Values.Unknown);
     common.getElementById('oxftNo').setAttribute('value', question.Values.No);
+
+    return true;
 }
 
 function getSexName(sex) {
@@ -390,7 +413,6 @@ function loadJSON(url, func) {
 
 function loadQuestionsFunc() {
     questions = this.response;
-    fillQuestionForm();
     parameters.userInfo.element.style.display = 'block';
 }
 
@@ -418,9 +440,59 @@ function loadRanges(userInfo, func) {
 
 function loadRangesFunc() {
     ranges = this.response;
-
+    loadAnswersFromLocalStorage()
     parameters.userInfo.element.style.display = 'none';
-    parameters.instruction.element.style.display = 'block';
+    if(fillQuestionForm()) {
+        parameters.instruction.element.style.display = 'block';
+    }
+    else {
+        calculateResults();
+        showResults(parameters.results.element);
+        parameters.results.element.style.display = 'block';
+    }
+}
+
+function loadUserInfoFromLocalStorage() {
+    userInfo.firstname = localStorage.getItem('userInfo_firstname');
+    userInfo.lastname = localStorage.getItem('userInfo_lastname');
+    userInfo.age = parseInt(localStorage.getItem('userInfo_age'));
+    userInfo.sex = localStorage.getItem('userInfo_sex');
+    userInfo.occupation = localStorage.getItem('userInfo_occupation');
+
+}
+
+function loadAnswersFromLocalStorage() {
+    for(let i = 0; i < questions.length; i++){
+        let answerData = {'num': 0, 'capacity': '', 'value': 0, 'answer': ''}
+        let numStr =  localStorage.getItem('answer_' + questions[i].Num + '_num');
+        if(numStr) {
+            answerData.num = parseInt(numStr);
+            answerData.capacity = localStorage.getItem('answer_' + questions[i].Num + '_capacity');
+            answerData.value = parseInt(localStorage.getItem('answer_' + questions[i].Num + '_value'));
+            answerData.answer = localStorage.getItem('answer_' + questions[i].Num + '_answer');
+
+            commitAnswer(answerData);
+        }
+        else {
+            break;
+        }
+    }
+}
+
+function saveUserInfoToLocalStorage() {
+    localStorage.setItem('userInfo_firstname', userInfo.firstname);
+    localStorage.setItem('userInfo_lastname', userInfo.lastname);
+    localStorage.setItem('userInfo_age', userInfo.age);
+    localStorage.setItem('userInfo_sex', userInfo.sex);
+    localStorage.setItem('userInfo_occupation', userInfo.occupation);
+}
+
+function saveAnswerToLocalStorage(answer) {
+    localStorage.setItem('answer_' + answer.num + '_num', answer.num);
+    localStorage.setItem('answer_' + answer.num + '_capacity', answer.capacity);
+    localStorage.setItem('answer_' + answer.num + '_value', answer.value);
+    localStorage.setItem('answer_' + answer.num + '_answer', answer.answer);
+
 }
 
 function showResults(element) {
@@ -477,7 +549,6 @@ function showResults(element) {
 
     element.appendChild(chartDiv);
     element.appendChild(buttonsDiv);
-    // element.appendChild(resultDiv);
 }
 
 function showChart(element) {
@@ -510,6 +581,13 @@ function showChart(element) {
     element.appendChild(chartSVG);
 }
 
+function submitInstruction(event) {
+    parameters.instruction.element.style.display = 'none';
+    parameters.questions.element.style.display = 'block';
+
+    event.preventDefault();
+}
+
 function submitQuestion(answer, value) {
     const answerData = {'num': 0, 'capacity': '', 'value': 0, 'answer': ''}
     const numInput = document.getElementById('oxftNum');
@@ -519,15 +597,7 @@ function submitQuestion(answer, value) {
     answerData.num = parseInt(document.getElementById('oxftNum').value);
     answerData.capacity = document.getElementById('oxftCapacity').value;
 
-    capacityAnswers[answerData.capacity] += answerData.value;
-
-    if((answerData.num == 197) & (answerData.answer.toUpperCase() == 'YES'))
-        capacityAnswers['ManicB'] = 1;
-
-    if((answerData.num == 22) & (answerData.answer.toUpperCase() == 'YES'))
-        capacityAnswers['ManicE'] = 1;
-
-    answers.push(answerData);
+    commitAnswer(answerData);
 
     if(answerData.num < questions.length) {
         numInput.value = answerData.num + 1;
@@ -569,12 +639,14 @@ function submitUserInfo(event) {
             userInfo.sex = sexInputs[i].value;
     }
 
+    saveUserInfoToLocalStorage();
     loadRanges(userInfo, loadRangesFunc);
 
     event.preventDefault();
 }
 
 export function startTest() {
+    loadUserInfoFromLocalStorage();
     userInfoForm.questions[0].value = userInfo.firstname;
     userInfoForm.questions[1].value = userInfo.lastname;
     userInfoForm.questions[2].value = userInfo.age;
