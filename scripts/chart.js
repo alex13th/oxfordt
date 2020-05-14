@@ -132,16 +132,18 @@ function drawVGrid(left, top, length, parameters) {
     return axisG;
 }
 
-function createRectLabel(x, y, width, title, parameters) {
+function createRectLabel(x, y, width, title, subTitle, parameters) {
     const labelG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const labelRect = createRect(x, y, width, parameters.rect.height, parameters.rect);
-    const labelText = createText(title, x + width/2, y + parameters.rect.height/2, parameters.style);
+    const labelText = createText(title, x + width/2, y + parameters.rect.height/2 - parameters.style.fontSize/2, parameters.style);
+    const labelSubText = createText(subTitle, x + width/2, y + parameters.rect.height/2 + parameters.subStyle.fontSize, parameters.subStyle);
     labelG.appendChild(labelRect);
     labelG.appendChild(labelText);
+    labelG.appendChild(labelSubText);
     return labelG;
 }
 
-function drawVAxisLabels(left, top, step, labelSet) {
+function drawVAxisLabels(left, top, step, labelSet, bottom) {
     const x = left;
     const y = top;
 
@@ -153,9 +155,11 @@ function drawVAxisLabels(left, top, step, labelSet) {
                 y, 
                 step, 
                 labelSet.labels[i], 
+                labelSet.subLabels[i], 
                 labelSet.parameters);
         vAxisLabelsG.appendChild(rectLabel);
     }
+
     return vAxisLabelsG;
 }
 

@@ -30,7 +30,7 @@ export const parameters = {
             height: '100%',
             width: '100%',
             topPadding: 0,
-            leftPadding: 200, // Подумать как расчитать от параметров вертикальной оси
+            leftPadding: 250,
             chartArea: {
                 style: {
                     width: 3,
@@ -46,7 +46,7 @@ export const parameters = {
                         fill: 'black',
                         opacity: 1,
                         anchor: 'start',
-                        offset: 0 // Подумать о замене на расчетный от leftPadding
+                        offset: 0
                     }
                 },
                 subTitle: {
@@ -57,7 +57,7 @@ export const parameters = {
                         fill: 'gray',
                         opacity: 1,
                         anchor: 'start',
-                        offset: 0 // Подумать о замене на расчетный от leftPadding
+                        offset: 0
                     }
                 }
             },
@@ -86,23 +86,23 @@ export const parameters = {
                     labels: ['+100', '+90','+80','+70','+60','+50','+40','+30','+20','+10',
                     '0', '-10', '-20', '-30', '-40', '-50', '-60', '-70', '-80', '-90', '-100'],
                     style: {
-                        fontSize: 50,
+                        fontSize: 60,
                         color: 'black',
                         fill: 'black',
                         opacity: 1,
                         anchor: 'end',
-                        offset: 140 // Подумать о замене на расчетный от leftPadding
+                        offset: 200 // Подумать о замене на расчетный от leftPadding
                     }
                 },
                 emphasises: [
                     {
-                        emphasisUp: [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 35, 35],
-                        emphasisDown: [15, 15, -15, -15, -15, -15, -15, -15, -15, -15, -15, -15],
+                        emphasisUp: [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7],
+                        emphasisDown: [-15, -15, -15, -15, -15, -15, -15, -15, -15, -15, -15, -15],
                         style: {fill: 'gray', width: 6, fillOpacity: .3, strokeDasharray: '60 15'}
                     },
                     {
-                        emphasisUp: [35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 50, 50],
-                        emphasisDown: [35, 35, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7],
+                        emphasisUp: [35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35],
+                        emphasisDown: [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7],
                         style: {fill: '#DDD', width: 6, fillOpacity: .3}
                     }
                 ]
@@ -117,10 +117,11 @@ export const parameters = {
                 },
                 dataLabels: {
                     labels: ['A','B','C','D','E','F','G','H','I', 'J', ' '],
+                    subLabels: ['Стабильность','Счастье','Спокойствие','Уверенность','Активность','Cпособность','Ответственность','Объективность','Открытость', 'Общение', ' '],
                     parameters: {
                         rect: {
                             fill: 'white',
-                            height: 200
+                            height: 250
                         },
                         style: {
                             fontSize: 70,
@@ -129,8 +130,16 @@ export const parameters = {
                             opacity: 1,
                             anchor: 'middle',
                             offset: 0,
+                        },
+                        subStyle: {
+                            fontSize: 48,
+                            color: 'black',
+                            fill: 'black',
+                            opacity: 1,
+                            anchor: 'middle',
+                            offset: 0,
                         }
-                    }
+                    },
                 }
             },
             graph: {
@@ -468,7 +477,7 @@ function showResults(element) {
 
     element.appendChild(chartDiv);
     element.appendChild(buttonsDiv);
-    element.appendChild(resultDiv);
+    // element.appendChild(resultDiv);
 }
 
 function showChart(element) {
