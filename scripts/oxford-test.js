@@ -237,9 +237,14 @@ function loadJSON(url, func) {
     request.send();
 }
 
-function loadRanges(userInfo) {
-    const request = new XMLHttpRequest();
+function loadRangesFunc() {
+    ranges = this.response;
 
+    parameters.userInfo.element.style.display = 'none';
+    parameters.instruction.element.style.display = 'block';
+}
+
+function loadRanges(userInfo, func) {
     let json;
     if(userInfo.sex == 'female') {
         if(userInfo.age > 18) {
@@ -258,14 +263,7 @@ function loadRanges(userInfo) {
         }
     }
 
-    request.open('GET', json);
-    request.responseType = 'json';
-
-    request.onload = function () {
-        ranges = request.response;
-    }
-
-    request.send();
+    loadJSON(json, func);
 }
 
 function submitUserInfo(event) {
@@ -281,10 +279,7 @@ function submitUserInfo(event) {
             userInfo.sex = sexInputs[i].value;
     }
 
-    loadRanges(userInfo);
-
-    parameters.userInfo.element.style.display = 'none';
-    parameters.instruction.element.style.display = 'block';
+    loadRanges(userInfo, loadRangesFunc);
 
     event.preventDefault();
 }
@@ -521,8 +516,12 @@ function showChart(element) {
     percents.push(capacityResults['H']);
     percents.push(capacityResults['I']);
     percents.push(capacityResults['J']);
+
+    let keyPoints = [];
+    if(capacityAnswers.ManicB) keyPoints.push(1);
+    if(capacityAnswers.ManicE) keyPoints.push(4);
  
-    chartSVG = chart.drawChart(null, percents, parameters.chart.options);
+    chartSVG = chart.drawChart(null, percents, parameters.chart.options, keyPoints);
  
     element.appendChild(chartSVG);
 }
@@ -551,6 +550,11 @@ export function startTest() {
 }
 
 
+function testRangesFunc() {
+    ranges = this.response;
+    loadJSON(parameters.questions.json, testQuestionsFunc);
+}
+
 function testQuestionsFunc() {
     questions = this.response;
 
@@ -568,7 +572,6 @@ export function testTest() {
     userInfoForm.questions[3].value = userInfo.occupation;
     userInfoForm.questions[4].value = userInfo.sex;
 
-    loadRanges(userInfo);
 
     common.parameters.document = parameters.document;
 
@@ -583,5 +586,5 @@ export function testTest() {
 
     parameters.results.element.style.display = 'none';
 
-    loadJSON(parameters.questions.json, testQuestionsFunc);
+    loadRanges(userInfo, testRangesFunc);
 }

@@ -5,6 +5,7 @@ body {
 }
 
 section {
+    display: none;
     padding: 1em;
     border-radius: 4px;
     box-shadow: 2px 2px 4px lightslategray;

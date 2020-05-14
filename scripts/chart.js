@@ -201,10 +201,10 @@ function drawGrid(options) {
     return gridG;
 }
 
-function drawGraph(data, options) {
-    let graphG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    let graphPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    graphG.appendChild(graphPath);
+function drawGraph(data, options, keyPoints = []) {
+    const result = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const graphPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    result.appendChild(graphPath);
 
     let strPath ='M';
     for(let i = 0; i < data.length; i++) {
@@ -218,8 +218,20 @@ function drawGraph(data, options) {
         setAttributeSVG(graphPoint, 'cy', y);
         setAttributeSVG(graphPoint, 'r', options.graph.point.radius);
         setAttributeSVG(graphPoint, 'fill', options.graph.point.color);
-        graphG.appendChild(graphPoint);
-        graphG.appendChild(createText(data[i], x + options.graph.point.radius / 2, y, options.graph.label.style));
+        result.appendChild(graphPoint);
+
+        if(keyPoints.includes(i)) {
+            var graphElipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+            setAttributeSVG(graphElipse, 'cx', x);
+            setAttributeSVG(graphElipse, 'cy', y);
+            setAttributeSVG(graphElipse, 'rx', options.graph.point.radius * 2);
+            setAttributeSVG(graphElipse, 'ry', options.graph.point.radius * 3);
+            setAttributeSVG(graphElipse, 'fill', 'yellow');
+            setAttributeSVG(graphElipse, 'opacity', '.5');
+            result.appendChild(graphElipse);
+        }
+
+        result.appendChild(createText(data[i], x + options.graph.point.radius / 2, y, options.graph.label.style));
     }
 
     setAttributeSVG(graphPath, 'd', strPath);
@@ -227,16 +239,17 @@ function drawGraph(data, options) {
     setAttributeSVG(graphPath, 'stroke', options.graph.line.color);
     setAttributeSVG(graphPath, 'stroke-width', options.graph.line.width);
 
-    return graphG;
+    return result;
 }
 
 function drawHGridEmphasis(emphasis, options) {
     const dataUp = emphasis.emphasisUp;
     const dataDown = emphasis.emphasisDown;
 
-    const graphG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const result = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const graphPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    graphG.appendChild(graphPath);
+    
+    result.appendChild(graphPath);
 
     let strPath ='M';
 
@@ -272,7 +285,7 @@ function drawHGridEmphasis(emphasis, options) {
     setAttributeSVG(graphPath, 'd', strPath);
     setStyle(graphPath, emphasis.style);
 
-    return graphG;
+    return result;
 }
 
 function drawHGridEmphasises(options) {
@@ -285,7 +298,7 @@ function drawHGridEmphasises(options) {
     return graphG;
 }
 
-export function drawChart(chartDiv, data, options) {
+export function drawChart(chartDiv, data, options, keyPoints = []) {
 
     const chartWidth = options.vGrid.step * options.vGrid.count + options.leftPadding;
     const chartHeight = options.hGrid.step * (options.hGrid.count -1) + options.topPadding + options.vGrid.dataLabels.parameters.rect.height * 2;
@@ -305,7 +318,7 @@ export function drawChart(chartDiv, data, options) {
 
     mainG.appendChild(mainRect);
     mainG.appendChild(drawGrid(options));
-    mainG.appendChild(drawGraph(data, options));
+    mainG.appendChild(drawGraph(data, options, keyPoints));
     mainG.appendChild(drawHGridEmphasises(options));
 
     chartSVG.appendChild(mainG);
