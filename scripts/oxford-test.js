@@ -220,68 +220,38 @@ const userInfoForm = {
     ]
 }
 
-function loadQuestionsFunc() {
-    questions = this.response;
-    fillQuestionForm();
-    parameters.userInfo.element.style.display = 'block';
-}
-
-function loadJSON(url, func) {
-    const request = new XMLHttpRequest();
-
-    request.open('GET', url);
-    request.responseType = 'json';
-
-    request.onload = func;
-
-    request.send();
-}
-
-function loadRangesFunc() {
-    ranges = this.response;
-
-    parameters.userInfo.element.style.display = 'none';
-    parameters.instruction.element.style.display = 'block';
-}
-
-function loadRanges(userInfo, func) {
-    let json;
-    if(userInfo.sex == 'female') {
-        if(userInfo.age > 18) {
-            json = parameters.results.womenJSON;
-        }
-        else {
-            json = parameters.results.girlsJSON;
-        }
+function calculateResults() {
+    if(ranges) {
+        capacityResults.A = ranges.A[capacityAnswers.A];
+        capacityResults.B = ranges.B[capacityAnswers.B];
+        capacityResults.C = ranges.C[capacityAnswers.C];
+        capacityResults.D = ranges.D[capacityAnswers.D];
+        capacityResults.E = ranges.E[capacityAnswers.E];
+        capacityResults.F = ranges.F[capacityAnswers.F];
+        capacityResults.G = ranges.G[capacityAnswers.G];
+        capacityResults.H = ranges.H[capacityAnswers.H];
+        capacityResults.I = ranges.I[capacityAnswers.I];
+        capacityResults.J = ranges.A[capacityAnswers.J];
     }
-    else if(userInfo.sex == 'male') {
-        if(userInfo.age > 18) {
-            json = parameters.results.menJSON;
-        }
-        else {
-            json = parameters.results.boysJSON;
-        }
+    else {
+        alert("Ranges еще не загружены"); // Диагностическое сообщение
+    }
+}
+
+function clickSaveChartButton() {
+    const exportSVG = 'data:image/svg,' + escape(common.getElementById('oxftChartDiv').innerHTML);
+    let exportLink = common.getElementById("osftResultA");
+
+    if(exportLink) {
+        exportLink.setAttribute('href', exportSVG);
+        exportLink.setAttribute('download', 'results.svg');
+    } 
+    else {
+        exportLink = common.createA(exportSVG, null, 'osftResultA', 'results.svg');
     }
 
-    loadJSON(json, func);
-}
-
-function submitUserInfo(event) {
-    const sexInputs = common.getElementsByName('inp_sex');
-
-    userInfo.firstname = common.getElementById('inp_firstname').value;
-    userInfo.lastname = common.getElementById('inp_lastname').value;
-    userInfo.age = parseInt(common.getElementById('inp_age').value);
-    userInfo.occupation = common.getElementById('inp_occupation').value;
-
-    for(let i = 0; i < sexInputs.length; i++) {
-        if(sexInputs[i].checked)
-            userInfo.sex = sexInputs[i].value;
-    }
-
-    loadRanges(userInfo, loadRangesFunc);
-
-    event.preventDefault();
+    document.body.appendChild(exportLink);
+    exportLink.click();
 }
 
 function createUserInfoForm() {
@@ -347,52 +317,6 @@ function createQuestion() {
     return result;
 }
 
-function submitQuestion(answer, value) {
-    const answerData = {'num': 0, 'capacity': '', 'value': 0, 'answer': ''}
-    const numInput = document.getElementById('oxftNum');
-    answerData.answer = answer
-    answerData.value = value;
-
-    answerData.num = parseInt(document.getElementById('oxftNum').value);
-    answerData.capacity = document.getElementById('oxftCapacity').value;
-
-    capacityAnswers[answerData.capacity] += answerData.value;
-
-    if((answerData.num == 197) & (answerData.answer.toUpperCase() == 'YES'))
-        capacityAnswers['ManicB'] = 1;
-
-    if((answerData.num == 22) & (answerData.answer.toUpperCase() == 'YES'))
-        capacityAnswers['ManicE'] = 1;
-
-    answers.push(answerData);
-
-    if(answerData.num < questions.length) {
-        numInput.value = answerData.num + 1;
-        fillQuestionForm();
-    }
-    else {
-        calculateResults();
-        showResults(parameters.results.element);
-        parameters.questions.element.style.display = 'none';
-        parameters.results.element.style.display = 'block';
-    }
-}
-
-function submitYesQuestionForm() {
-    const value = parseInt(document.getElementById('oxftYes').value);
-    submitQuestion('yes', value)
-}
-
-function submitNoQuestionForm() {
-    const value = parseInt(document.getElementById('oxftNo').value);
-    submitQuestion('no', value)
-}
-
-function submitUnknownQuestionForm() {
-    const value = parseInt(document.getElementById('oxftUnknown').value);
-    submitQuestion('unknown', value)
-}
-
 function fillQuestionForm() {
     const numInput = document.getElementById('oxftNum');
 
@@ -411,38 +335,50 @@ function fillQuestionForm() {
     common.getElementById('oxftNo').setAttribute('value', question.Values.No);
 }
 
-function calculateResults() {
-    if(ranges) {
-        capacityResults.A = ranges.A[capacityAnswers.A];
-        capacityResults.B = ranges.B[capacityAnswers.B];
-        capacityResults.C = ranges.C[capacityAnswers.C];
-        capacityResults.D = ranges.D[capacityAnswers.D];
-        capacityResults.E = ranges.E[capacityAnswers.E];
-        capacityResults.F = ranges.F[capacityAnswers.F];
-        capacityResults.G = ranges.G[capacityAnswers.G];
-        capacityResults.H = ranges.H[capacityAnswers.H];
-        capacityResults.I = ranges.I[capacityAnswers.I];
-        capacityResults.J = ranges.A[capacityAnswers.J];
-    }
-    else {
-        alert("Ranges еще не загружены"); // Диагностическое сообщение
-    }
+function loadJSON(url, func) {
+    const request = new XMLHttpRequest();
+
+    request.open('GET', url);
+    request.responseType = 'json';
+
+    request.onload = func;
+
+    request.send();
 }
 
-function clickSaveChartButton() {
-    const exportSVG = 'data:image/svg,' + escape(common.getElementById('oxftChartDiv').innerHTML);
-    let exportLink = common.getElementById("osftResultA");
+function loadQuestionsFunc() {
+    questions = this.response;
+    fillQuestionForm();
+    parameters.userInfo.element.style.display = 'block';
+}
 
-    if(exportLink) {
-        exportLink.setAttribute('href', exportSVG);
-        exportLink.setAttribute('download', 'results.svg');
-    } 
-    else {
-        exportLink = common.createA(exportSVG, null, 'osftResultA', 'results.svg');
+function loadRanges(userInfo, func) {
+    let json;
+    if(userInfo.sex == 'female') {
+        if(userInfo.age > 18) {
+            json = parameters.results.womenJSON;
+        }
+        else {
+            json = parameters.results.girlsJSON;
+        }
+    }
+    else if(userInfo.sex == 'male') {
+        if(userInfo.age > 18) {
+            json = parameters.results.menJSON;
+        }
+        else {
+            json = parameters.results.boysJSON;
+        }
     }
 
-    document.body.appendChild(exportLink);
-    exportLink.click();
+    loadJSON(json, func);
+}
+
+function loadRangesFunc() {
+    ranges = this.response;
+
+    parameters.userInfo.element.style.display = 'none';
+    parameters.instruction.element.style.display = 'block';
 }
 
 function showResults(element) {
@@ -502,7 +438,6 @@ function showResults(element) {
     element.appendChild(resultDiv);
 }
 
-
 function showChart(element) {
     const percents = [];
  
@@ -524,6 +459,70 @@ function showChart(element) {
     chartSVG = chart.drawChart(null, percents, parameters.chart.options, keyPoints);
  
     element.appendChild(chartSVG);
+}
+
+function submitQuestion(answer, value) {
+    const answerData = {'num': 0, 'capacity': '', 'value': 0, 'answer': ''}
+    const numInput = document.getElementById('oxftNum');
+    answerData.answer = answer
+    answerData.value = value;
+
+    answerData.num = parseInt(document.getElementById('oxftNum').value);
+    answerData.capacity = document.getElementById('oxftCapacity').value;
+
+    capacityAnswers[answerData.capacity] += answerData.value;
+
+    if((answerData.num == 197) & (answerData.answer.toUpperCase() == 'YES'))
+        capacityAnswers['ManicB'] = 1;
+
+    if((answerData.num == 22) & (answerData.answer.toUpperCase() == 'YES'))
+        capacityAnswers['ManicE'] = 1;
+
+    answers.push(answerData);
+
+    if(answerData.num < questions.length) {
+        numInput.value = answerData.num + 1;
+        fillQuestionForm();
+    }
+    else {
+        calculateResults();
+        showResults(parameters.results.element);
+        parameters.questions.element.style.display = 'none';
+        parameters.results.element.style.display = 'block';
+    }
+}
+
+function submitNoQuestionForm() {
+    const value = parseInt(document.getElementById('oxftNo').value);
+    submitQuestion('no', value)
+}
+
+function submitUnknownQuestionForm() {
+    const value = parseInt(document.getElementById('oxftUnknown').value);
+    submitQuestion('unknown', value)
+}
+
+function submitYesQuestionForm() {
+    const value = parseInt(document.getElementById('oxftYes').value);
+    submitQuestion('yes', value)
+}
+
+function submitUserInfo(event) {
+    const sexInputs = common.getElementsByName('inp_sex');
+
+    userInfo.firstname = common.getElementById('inp_firstname').value;
+    userInfo.lastname = common.getElementById('inp_lastname').value;
+    userInfo.age = parseInt(common.getElementById('inp_age').value);
+    userInfo.occupation = common.getElementById('inp_occupation').value;
+
+    for(let i = 0; i < sexInputs.length; i++) {
+        if(sexInputs[i].checked)
+            userInfo.sex = sexInputs[i].value;
+    }
+
+    loadRanges(userInfo, loadRangesFunc);
+
+    event.preventDefault();
 }
 
 export function startTest() {
@@ -549,6 +548,7 @@ export function startTest() {
     loadJSON(parameters.questions.json, loadQuestionsFunc);
 }
 
+// Секция тестовых функций
 
 function testRangesFunc() {
     ranges = this.response;
@@ -588,3 +588,5 @@ export function testTest() {
 
     loadRanges(userInfo, testRangesFunc);
 }
+
+// Секция тестовых функций
