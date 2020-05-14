@@ -13,6 +13,18 @@ export function addRadioInputs(element, name, options, value=null, required, cla
     }
 }
 
+export function createA(href=null, text=null, id=null, download=null, className=null) {
+    const result = parameters.document.createElement('a');
+
+    if(href) result.href = href;
+    if(text) result.innerHTML = text;
+    if(id) result.id = id;
+    if(download) result.download = download;
+    if(className) result.className = className;
+
+    return result;
+}
+
 export function createButton(caption, id=null, value=null, type='submit', className=null) {
     const result = parameters.document.createElement('button');
     result.innerHTML = caption;
@@ -82,6 +94,10 @@ export function createFields(items) {
     }
 
     return result;
+}
+
+export function createForm() {
+    return document.createElement("form");
 }
 
 export function createHeader(text, type='h2', className=null) {
@@ -156,4 +172,12 @@ export function createTextInput(name, placeholder=null, value=null, required=fal
         result.placeholder = placeholder;
 
     return result;
+}
+
+export function  getElementById(id) {
+    return document.getElementById(id);
+}
+
+export function getElementsByName(name) {
+    return document.getElementsByName(name);
 }

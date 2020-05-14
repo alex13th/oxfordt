@@ -223,9 +223,8 @@ const userInfoForm = {
 
 function loadQuestionsFunc() {
     questions = this.response;
-    fillQuestionsForm();
+    fillQuestionForm();
     parameters.userInfo.element.style.display = 'block';
-
 }
 
 function loadJSON(url, func) {
@@ -271,12 +270,13 @@ function loadRanges(userInfo) {
 }
 
 function submitUserInfo(event) {
-    userInfo.firstname = document.getElementById('inp_firstname').value;
-    userInfo.lastname = document.getElementById('inp_lastname').value;
-    userInfo.age = document.getElementById('inp_age').value;
-    userInfo.occupation = document.getElementById('inp_occupation').value;
+    const sexInputs = common.getElementsByName('inp_sex');
 
-    let sexInputs = document.getElementsByName('inp_sex');
+    userInfo.firstname = common.getElementById('inp_firstname').value;
+    userInfo.lastname = common.getElementById('inp_lastname').value;
+    userInfo.age = parseInt(common.getElementById('inp_age').value);
+    userInfo.occupation = common.getElementById('inp_occupation').value;
+
     for(let i = 0; i < sexInputs.length; i++) {
         if(sexInputs[i].checked)
             userInfo.sex = sexInputs[i].value;
@@ -290,17 +290,19 @@ function submitUserInfo(event) {
     event.preventDefault();
 }
 
-function createUserInfoForm(element) {
-    const form = document.createElement("form");
-    const buttonsDiv = document.createElement("div");
+function createUserInfoForm() {
+    const form = common.createForm();
+    const buttonsDiv = common.createDiv();
+
+    buttonsDiv.appendChild(common.createButton('Далее'));
 
     form.appendChild(common.createHeader(userInfoForm.caption));
     form.appendChild(common.createFields(userInfoForm.questions));
-    buttonsDiv.appendChild(common.createButton('Далее'));
     form.appendChild(buttonsDiv);
+
     form.addEventListener('submit', submitUserInfo);
 
-    element.appendChild(form);
+    return form;
 }
 
 function submitInstruction(event) {
@@ -310,47 +312,40 @@ function submitInstruction(event) {
     event.preventDefault();
 }
 
-function createInstruction(element) {
-    const form = document.createElement("form");
-    const buttonsDiv = document.createElement("div");
+function createInstruction() {
+    const form = common.createForm();
+    const buttonsDiv = common.createDiv();
+
+    buttonsDiv.appendChild(common.createButton('Далее'));
 
     form.appendChild(common.createHeader(instruction.title));
     form.appendChild(common.createList(instruction.instructions, 'ol'));
-    buttonsDiv.appendChild(common.createButton('Далее'));
     form.appendChild(buttonsDiv);
 
     form.addEventListener('submit', submitInstruction);
 
-    element.appendChild(form);
+    return form;
 }
 
 function createQuestion() {
-    const result = document.createElement("div");
-    result.id = 'oxftQuestion';
-
-    const textDiv = document.createElement("div");
-    textDiv.id = 'oxftQuestionText';
-    textDiv.className = parameters.questions.className;
-
-    result.appendChild(textDiv);
+    const result = common.createDiv(null, 'oxftQuestion');
+    const textDiv = common.createDiv(null, 'oxftQuestionText', parameters.questions.className);
+    const buttonsDiv = common.createDiv(null, 'oxftQuestionButtons');
     const capacityInput = common.createInput('oxftCapacity', 'hidden');
     const numInput = common.createInput('oxftNum', 'hidden');
-
-    const buttonsDiv = document.createElement("div");
-    buttonsDiv.id = 'oxftQuestionButtons';
-
     const yesButton = common.createButton('Да', 'oxftYes', 'yes', 'button')
-    yesButton.addEventListener('click', submitYesQuestionForm);
-    buttonsDiv.appendChild(yesButton);
-
     const unknownButton = common.createButton('Возможно', 'oxftUnknown', 'unknown', 'button')
-    unknownButton.addEventListener('click', submitUnknownQuestionsForm);
-    buttonsDiv.appendChild(unknownButton);
-
     const noButton = common.createButton('Нет', 'oxftNo', 'no', 'button')
+
+    yesButton.addEventListener('click', submitYesQuestionForm);
+    unknownButton.addEventListener('click', submitUnknownQuestionForm);
     noButton.addEventListener('click', submitNoQuestionForm);
+
+    buttonsDiv.appendChild(yesButton);
+    buttonsDiv.appendChild(unknownButton);
     buttonsDiv.appendChild(noButton);
 
+    result.appendChild(textDiv);
     result.appendChild(capacityInput);
     result.appendChild(numInput);
     result.appendChild(buttonsDiv);
@@ -379,7 +374,7 @@ function submitQuestion(answer, value) {
 
     if(answerData.num < questions.length) {
         numInput.value = answerData.num + 1;
-        fillQuestionsForm();
+        fillQuestionForm();
     }
     else {
         calculateResults();
@@ -399,30 +394,27 @@ function submitNoQuestionForm() {
     submitQuestion('no', value)
 }
 
-function submitUnknownQuestionsForm() {
+function submitUnknownQuestionForm() {
     const value = parseInt(document.getElementById('oxftUnknown').value);
     submitQuestion('unknown', value)
 }
 
-function createQuestionForm(element) {
-    const questionDiv = createQuestion();
-    element.appendChild(questionDiv);
-}
-
-function fillQuestionsForm() {
+function fillQuestionForm() {
     const numInput = document.getElementById('oxftNum');
+
     let questionNum = 1;
     if(numInput.value) {
         questionNum = parseInt(numInput.value);
     }
 
-    let question = questions[questionNum - 1];
-    document.getElementById('oxftQuestionText').innerHTML = question.Num + '.&nbsp;' + question.Question;
-    document.getElementById('oxftCapacity').setAttribute('value', question.Capacity);
-    document.getElementById('oxftNum').setAttribute('value', question.Num);
-    document.getElementById('oxftYes').setAttribute('value', question.Values.Yes);
-    document.getElementById('oxftUnknown').setAttribute('value', question.Values.Unknown);
-    document.getElementById('oxftNo').setAttribute('value', question.Values.No);
+    const question = questions[questionNum - 1];
+
+    common.getElementById('oxftQuestionText').innerHTML = question.Num + '.&nbsp;' + question.Question;
+    common.getElementById('oxftCapacity').setAttribute('value', question.Capacity);
+    common.getElementById('oxftNum').setAttribute('value', question.Num);
+    common.getElementById('oxftYes').setAttribute('value', question.Values.Yes);
+    common.getElementById('oxftUnknown').setAttribute('value', question.Values.Unknown);
+    common.getElementById('oxftNo').setAttribute('value', question.Values.No);
 }
 
 function calculateResults() {
@@ -444,29 +436,33 @@ function calculateResults() {
 }
 
 function clickSaveChartButton() {
-    const exportSVG = document.getElementById('oxftChartDiv').innerHTML;
+    const exportSVG = 'data:image/svg,' + escape(common.getElementById('oxftChartDiv').innerHTML);
+    let exportLink = common.getElementById("osftResultA");
 
-    const exportLink = document.createElement("a");
-    exportLink.setAttribute("href", 'data:image/svg,' + escape(exportSVG));
-    exportLink.setAttribute("download", "results.svg");
-    document.body.appendChild(exportLink); // Required for FF
-    
+    if(exportLink) {
+        exportLink.setAttribute('href', exportSVG);
+        exportLink.setAttribute('download', 'results.svg');
+    } 
+    else {
+        exportLink = common.createA(exportSVG, null, 'osftResultA', 'results.svg');
+    }
+
+    document.body.appendChild(exportLink);
     exportLink.click();
-
-    // window.open('data:image/svg,' + escape(exportSVG));
 }
 
 function showResults(element) {
     const points = [];
     const percents = [];
     const resultDiv = common.createDiv(null, 'oxftResultDiv');
-    resultDiv.style.display = 'flex';
     const pointsDiv = common.createDiv(null, 'oxftPointsDiv');
     const percentsDiv = common.createDiv(null, 'oxftPercentsDiv');
     const chartDiv = common.createDiv(null, 'oxftChartDiv');
 
-    pointsDiv.appendChild(common.createHeader("Набранные очки", 'h2'));
+    resultDiv.style.display = 'flex';
     pointsDiv.style.flex = '1';
+    percentsDiv.style.flex = '1';
+
     points.push('A: ' + capacityAnswers['A']);
     points.push('B: ' + capacityAnswers['B']);
     points.push('C: ' + capacityAnswers['C']);
@@ -477,11 +473,7 @@ function showResults(element) {
     points.push('H: ' + capacityAnswers['H']);
     points.push('I: ' + capacityAnswers['I']);
     points.push('J: ' + capacityAnswers['J']);
-    pointsDiv.appendChild(common.createList(points));
-    resultDiv.appendChild(pointsDiv);
 
-    percentsDiv.appendChild(common.createHeader("Проценты", 'h2'));
-    percentsDiv.style.flex = '1';
     percents.push('A: ' + capacityResults['A']);
     percents.push('B: ' + capacityResults['B']);
     percents.push('C: ' + capacityResults['C']);
@@ -492,7 +484,14 @@ function showResults(element) {
     percents.push('H: ' + capacityResults['H']);
     percents.push('I: ' + capacityResults['I']);
     percents.push('J: ' + capacityResults['J']);
+
+    pointsDiv.appendChild(common.createHeader("Набранные очки", 'h2'));
+    pointsDiv.appendChild(common.createList(points));
+
+    percentsDiv.appendChild(common.createHeader("Проценты", 'h2'));
     percentsDiv.appendChild(common.createList(percents));
+
+    resultDiv.appendChild(pointsDiv);
     resultDiv.appendChild(percentsDiv);
 
     showChart(chartDiv);
@@ -511,8 +510,8 @@ function showResults(element) {
 
 
 function showChart(element) {
- 
     const percents = [];
+ 
     percents.push(capacityResults['A']);
     percents.push(capacityResults['B']);
     percents.push(capacityResults['C']);
@@ -523,7 +522,9 @@ function showChart(element) {
     percents.push(capacityResults['H']);
     percents.push(capacityResults['I']);
     percents.push(capacityResults['J']);
+ 
     chartSVG = chart.drawChart(null, percents, parameters.chart.options);
+ 
     element.appendChild(chartSVG);
 }
 
@@ -535,14 +536,15 @@ export function startTest() {
     userInfoForm.questions[4].value = userInfo.sex;
 
     common.parameters.document = parameters.document;
+
     parameters.instruction.element.style.display = 'none';
-    createInstruction(parameters.instruction.element);
+    parameters.instruction.element.appendChild(createInstruction());
 
     parameters.userInfo.element.style.display = 'none';
-    createUserInfoForm(parameters.userInfo.element);
+    parameters.userInfo.element.appendChild(createUserInfoForm());
 
     parameters.questions.element.style.display = 'none';
-    createQuestionForm(parameters.questions.element);
+    parameters.questions.element.appendChild(createQuestion());
 
     parameters.results.element.style.display = 'none';
 
@@ -552,8 +554,10 @@ export function startTest() {
 
 function testQuestionsFunc() {
     questions = this.response;
+
     calculateResults();
     showResults(parameters.results.element);
+
     parameters.questions.element.style.display = 'none';
     parameters.results.element.style.display = 'block';
 }
@@ -568,14 +572,15 @@ export function testTest() {
     loadRanges(userInfo);
 
     common.parameters.document = parameters.document;
+
     parameters.instruction.element.style.display = 'none';
-    createInstruction(parameters.instruction.element);
+    parameters.instruction.element.appendChild(createInstruction());
 
     parameters.userInfo.element.style.display = 'none';
-    createUserInfoForm(parameters.userInfo.element);
+    parameters.userInfo.element.appendChild(createUserInfoForm());
 
     parameters.questions.element.style.display = 'none';
-    createQuestionForm(parameters.questions.element);
+    parameters.questions.element.appendChild(createQuestion());
 
     parameters.results.element.style.display = 'none';
 
