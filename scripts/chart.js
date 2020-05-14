@@ -80,154 +80,153 @@ function createTSpan(text, x, y, dx, dy, style) {
     return element;
 }
 
-function drawHGrid(options) {
-    var gridLength = options.vGrid.step * (options.vGrid.count - 1) 
-        + options.hGrid.extend
-        + options.vGrid.offset;
-    var x = options.topPadding 
-        + options.vGrid.dataLabels.parameters.rect.height 
-        + options.hGrid.offset;
-    var y = options.leftPadding;
+function drawHGrid(left, top, length, parameters) {
+    const gridLength = length + parameters.extend;
+    const x = left;
+    const y = top + parameters.offset;
 
     var axisG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     var axisLabelText = createText(
             null, 
-            options.leftPadding, 
-            x - options.hGrid.step  + (options.hGrid.step * .1),
-            options.hGrid.dataLabels.style);
+            x, 
+            y - parameters.step  + (parameters.step * .1),
+            parameters.dataLabels.style);
     
-    for(var i = 0; i < options.hGrid.count; i++) {
+    for(var i = 0; i < parameters.count; i++) {
         var gridLine = createLine(
-            y, 
-            x + options.hGrid.step * i, 
-            y + gridLength, 
-            x + options.hGrid.step * i,
-            options.hGrid.style);
+            x, 
+            y + parameters.step * i, 
+            x + gridLength, 
+            y + parameters.step * i,
+            parameters.style);
         axisG.appendChild(gridLine);
 
         var tSpan = createTSpan(
-            options.hGrid.dataLabels.labels[i], 
+            parameters.dataLabels.labels[i], 
             0, 
             null, 
             null, 
-            options.hGrid.step,
-            options.hGrid.dataLabels.style);
+            parameters.step,
+            parameters.dataLabels.style);
         axisLabelText.appendChild(tSpan);
     }
     axisG.appendChild(axisLabelText);
     return axisG;
 }
 
-function drawVGrid(options) { 
-    let x = options.leftPadding + options.vGrid.offset;
-    let y = options.topPadding + options.vGrid.dataLabels.parameters.rect.height;
-    let step = options.vGrid.step;
-    let gridLength = options.hGrid.step * (options.hGrid.count - 1) + options.hGrid.offset;
+function drawVGrid(left, top, length, parameters) { 
+    const x = left + parameters.offset;
+    const y = top;
+    const step = parameters.step;
+    const gridLength = length;
 
     let axisG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
-    for(let i = 0; i < options.vGrid.count; i++) {
+    for(let i = 0; i < parameters.count; i++) {
         let gridLine = createLine(
             x + step * i, y, x + step * i,
             y + gridLength, 
-            options.vGrid.style);
+            parameters.style);
         axisG.appendChild(gridLine);
     }
     return axisG;
 }
 
 function createRectLabel(x, y, width, title, parameters) {
-    let labelG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    let labelRect = createRect(x, y, width, parameters.rect.height, parameters.rect);
-    let labelText = createText(title, x + width/2, y + parameters.rect.height/2, parameters.style);
+    const labelG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const labelRect = createRect(x, y, width, parameters.rect.height, parameters.rect);
+    const labelText = createText(title, x + width/2, y + parameters.rect.height/2, parameters.style);
     labelG.appendChild(labelRect);
     labelG.appendChild(labelText);
     return labelG;
 }
 
-function drawVAxisLabels(x, y, options) {
-    let vAxisLabelsG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+function drawVAxisLabels(left, top, step, labelSet) {
+    const x = left;
+    const y = top;
 
-    for(let i = 0; i < options.vGrid.dataLabels.labels.length; i++) {
+    const vAxisLabelsG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+    for(let i = 0; i < labelSet.labels.length; i++) {
         let rectLabel = createRectLabel(
-                x + options.vGrid.step * i, 
+                x + step * i,
                 y, 
-                options.vGrid.step, 
-                options.vGrid.dataLabels.labels[i], 
-                options.vGrid.dataLabels.parameters);
+                step, 
+                labelSet.labels[i], 
+                labelSet.parameters);
         vAxisLabelsG.appendChild(rectLabel);
     }
     return vAxisLabelsG;
 }
 
-function drawGrid(options) {
-    let x = options.leftPadding;
-    let y = options.topPadding + options.vGrid.dataLabels.parameters.rect.height + options.hGrid.offset;
+function drawGrid(left, top, options) {
+    const x = left;
+    const y = top + options.vGrid.dataLabels.parameters.rect.height;
     
-    let gridG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const gridG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
-    let hGridG = drawHGrid(options);
+    // Ототброжение горизонтальной сетки
+    const hGridLength = options.vGrid.step * (options.vGrid.count - 1) + options.vGrid.offset;
+    const hGridG = drawHGrid(x, y, hGridLength, options.hGrid);
     let gridLine = createLine(
         x,
         y + options.hGrid.step * options.hAxis.position, 
         x + options.vGrid.offset + options.hGrid.extend + options.vGrid.step * (options.vGrid.count - 1),
         y + options.hGrid.step * options.hAxis.position,
         options.hAxis.style);
-    hGridG.appendChild(gridLine);
+    hGridG.appendChild(gridLine); // Добавление края горизонтальной сетки
     gridG.appendChild(hGridG);
 
-    let vGridG = drawVGrid(options); 
+    // Ототброжение вертикальной сетки
+    const vGridLength = options.hGrid.step * (options.hGrid.count - 1) + options.hGrid.offset;
+    const vGridG = drawVGrid(x, y, vGridLength, options.vGrid);
     gridLine = createLine(
         x + options.vGrid.step * options.vAxis.position,
         y, 
         x + options.vGrid.step * options.vAxis.position,
         y + options.hGrid.step * (options.hGrid.count - 1) + options.hGrid.offset, 
         options.vAxis.style);
-    vGridG.appendChild(gridLine);
+    vGridG.appendChild(gridLine); // Добавление края вертикальной сетки
     gridG.appendChild(vGridG);
 
-    let vTopLabelsG = drawVAxisLabels(
-        options.leftPadding, 
-        y - options.vGrid.dataLabels.parameters.rect.height, 
-        options);
+    const vTopLabelsG = drawVAxisLabels(x, top, options.vGrid.step, options.vGrid.dataLabels)
     gridG.appendChild(vTopLabelsG);
     
-    let vBottomLabelsG = drawVAxisLabels(
-        options.leftPadding, 
-        y + options.hGrid.step * (options.hGrid.count - 1), 
-        options);
+    const vBottomLabelsG = drawVAxisLabels(x, y + options.hGrid.step * (options.hGrid.count - 1), options.vGrid.step, options.vGrid.dataLabels);
     gridG.appendChild(vBottomLabelsG);
 
     return gridG;
 }
 
-function drawGraph(data, options, keyPoints = []) {
+function drawGraph(left, top, data, options, keyPoints = []) {
     const result = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const graphPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     result.appendChild(graphPath);
 
     let strPath ='M';
     for(let i = 0; i < data.length; i++) {
-        let x = ((i + options.vAxis.position) * options.vGrid.step + options.leftPadding + options.vGrid.offset);
-        let y = options.hAxis.position * options.hGrid.step 
-            - data[i] * options.hGrid.step/(options.hGrid.count - options.hAxis.position - 1) 
-            + options.topPadding + options.vGrid.dataLabels.parameters.rect.height + options.hGrid.offset;
+        let x = left + (i + options.vAxis.position) * options.vGrid.step;
+        let y = top + options.hAxis.position * options.hGrid.step - data[i] * options.hGrid.step/(options.hGrid.count - options.hAxis.position - 1);
+        let graphPoint = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+
         strPath = strPath + x + ' ' + y + ' ';
-        var graphPoint = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         setAttributeSVG(graphPoint, 'cx', x);
         setAttributeSVG(graphPoint, 'cy', y);
         setAttributeSVG(graphPoint, 'r', options.graph.point.radius);
         setAttributeSVG(graphPoint, 'fill', options.graph.point.color);
+
         result.appendChild(graphPoint);
 
         if(keyPoints.includes(i)) {
-            var graphElipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+            let graphElipse = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+
             setAttributeSVG(graphElipse, 'cx', x);
             setAttributeSVG(graphElipse, 'cy', y);
             setAttributeSVG(graphElipse, 'rx', options.graph.point.radius * 2);
             setAttributeSVG(graphElipse, 'ry', options.graph.point.radius * 3);
             setAttributeSVG(graphElipse, 'fill', 'yellow');
             setAttributeSVG(graphElipse, 'opacity', '.5');
+
             result.appendChild(graphElipse);
         }
 
@@ -242,9 +241,10 @@ function drawGraph(data, options, keyPoints = []) {
     return result;
 }
 
-function drawHGridEmphasis(emphasis, options) {
+function drawHGridEmphasis(left, top, emphasis, options) {
     const dataUp = emphasis.emphasisUp;
     const dataDown = emphasis.emphasisDown;
+    const calcTop = top;
 
     const result = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const graphPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -253,33 +253,32 @@ function drawHGridEmphasis(emphasis, options) {
 
     let strPath ='M';
 
-    let x = ((options.vAxis.position) * options.vGrid.step + options.leftPadding);
-    let y = options.hAxis.position * options.hGrid.step 
-        - dataUp[0] * options.hGrid.step/(options.hGrid.count - options.hAxis.position - 1) 
-        + options.topPadding + options.vGrid.dataLabels.parameters.rect.height;
+    let x = left + options.vAxis.position * options.vGrid.step;
+    let y = calcTop + options.hAxis.position * options.hGrid.step 
+        - dataUp[0] * options.hGrid.step/(options.hGrid.count - options.hAxis.position - 1);
     strPath = strPath + x + ' ' + y + ' ';
 
 
     for(let i = 0; i < dataUp.length; i++) {
-        x = ((i + options.vAxis.position) * options.vGrid.step + options.leftPadding + options.vGrid.offset);
-         y = options.hAxis.position * options.hGrid.step 
+        x = left + (i + options.vAxis.position) * options.vGrid.step + options.vGrid.offset;
+         y = calcTop + options.hAxis.position * options.hGrid.step 
             - dataUp[i] * options.hGrid.step/(options.hGrid.count - options.hAxis.position - 1) 
-            + options.topPadding + options.vGrid.dataLabels.parameters.rect.height + options.hGrid.offset;
+            + options.hGrid.offset;
         strPath = strPath + x + ' ' + y + ' ';
     }
 
     for(let i = 0; i < dataDown.length; i++) {
-        x = ((options.vAxis.position +  dataDown.length - i) * options.vGrid.step + options.leftPadding - options.vGrid.offset);
-        y = options.hAxis.position * options.hGrid.step 
+        x = left + (options.vAxis.position +  dataDown.length - i) * options.vGrid.step - options.vGrid.offset;
+        y = calcTop + options.hAxis.position * options.hGrid.step 
             - dataDown[i] * options.hGrid.step/(options.hGrid.count - options.hAxis.position - 1) 
-            + options.topPadding + options.vGrid.dataLabels.parameters.rect.height + options.hGrid.offset;
+            + options.hGrid.offset;
         strPath = strPath + x + ' ' + y + ' ';
     }
 
-    x = ((options.vAxis.position) * options.vGrid.step + options.leftPadding);
-    y = options.hAxis.position * options.hGrid.step 
+    x = left + (options.vAxis.position) * options.vGrid.step;
+    y = calcTop + options.hAxis.position * options.hGrid.step 
         - dataDown[dataDown.length -1 ] * options.hGrid.step/(options.hGrid.count - options.hAxis.position - 1) 
-        + options.topPadding + options.vGrid.dataLabels.parameters.rect.height + options.hGrid.offset;
+        + options.hGrid.offset;
     strPath = strPath + x + ' ' + y + ' ';
 
     setAttributeSVG(graphPath, 'd', strPath);
@@ -288,20 +287,42 @@ function drawHGridEmphasis(emphasis, options) {
     return result;
 }
 
-function drawHGridEmphasises(options) {
+function drawHGridEmphasises(left, top, options) {
     const graphG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
     for(let i = 0; i < options.hGrid.emphasises.length; i++) {
-        graphG.appendChild(drawHGridEmphasis(options.hGrid.emphasises[i], options));
+        graphG.appendChild(drawHGridEmphasis(left, top, options.hGrid.emphasises[i], options));
     }
 
     return graphG;
 }
 
+function drawChartArea(left, top, options) {
+    const result = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    result.appendChild(drawGrid(left, top, options));
+    result.appendChild(drawHGridEmphasises(left, top + options.vGrid.dataLabels.parameters.rect.height, options));
+
+    return result;
+}
+
+function drawChartHeader(left, top, parameters) {
+    const result = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+    const titleText = createText(parameters.title.text, left, top + 200, parameters.title.style);
+    const subTitleText = createText(parameters.subTitle.text, left, top + 320, parameters.subTitle.style);
+
+    result.appendChild(titleText);
+    result.appendChild(subTitleText);
+
+    return result;
+}
+
 export function drawChart(chartDiv, data, options, keyPoints = []) {
 
+    const chartTitleHeight = 500;
+
     const chartWidth = options.vGrid.step * options.vGrid.count + options.leftPadding;
-    const chartHeight = options.hGrid.step * (options.hGrid.count -1) + options.topPadding + options.vGrid.dataLabels.parameters.rect.height * 2;
+    const chartHeight = options.hGrid.step * (options.hGrid.count -1) + options.topPadding + options.vGrid.dataLabels.parameters.rect.height * 2 + chartTitleHeight;
 
     const chartSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const mainG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -317,11 +338,17 @@ export function drawChart(chartDiv, data, options, keyPoints = []) {
     chartSVG.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
     mainG.appendChild(mainRect);
-    mainG.appendChild(drawGrid(options));
-    mainG.appendChild(drawGraph(data, options, keyPoints));
-    mainG.appendChild(drawHGridEmphasises(options));
+
+    const chartAreaLeft = options.leftPadding;
+    const chartAreaTop = options.topPadding + options.hGrid.offset + chartTitleHeight;
+    mainG.appendChild(drawChartArea(chartAreaLeft, chartAreaTop, options));
+
+    const graphAreaLeft = chartAreaLeft + options.vGrid.offset;
+    const graphAreaTop = chartAreaTop + options.vGrid.dataLabels.parameters.rect.height + options.hGrid.offset;
+    mainG.appendChild(drawGraph(graphAreaLeft, graphAreaTop, data, options, keyPoints));
 
     chartSVG.appendChild(mainG);
+    chartSVG.appendChild(drawChartHeader(options.leftPadding, options.topPadding, options.header));
     if(chartDiv) chartDiv.appendChild(chartSVG);
 
     return chartSVG;

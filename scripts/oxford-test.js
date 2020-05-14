@@ -37,6 +37,30 @@ export const parameters = {
                     color: 'black'
                 }                
             },
+            header: {
+                title: {
+                    text: 'Основной заголовок',
+                    style: {
+                        fontSize: 100,
+                        color: 'black',
+                        fill: 'black',
+                        opacity: 1,
+                        anchor: 'start',
+                        offset: 0 // Подумать о замене на расчетный от leftPadding
+                    }
+                },
+                subTitle: {
+                    text: 'Подзаголовок',
+                    style: {
+                        fontSize: 80,
+                        color: 'gray',
+                        fill: 'gray',
+                        opacity: 1,
+                        anchor: 'start',
+                        offset: 0 // Подумать о замене на расчетный от leftPadding
+                    }
+                }
+            },
             hAxis: {
                 position: 10,
                 style: {
@@ -335,6 +359,15 @@ function fillQuestionForm() {
     common.getElementById('oxftNo').setAttribute('value', question.Values.No);
 }
 
+function getSexName(sex) {
+    if(sex.toUpperCase() == 'MALE') {
+        return 'Мужской'
+    }
+    else {
+        return 'Женский'
+    }
+}
+
 function loadJSON(url, func) {
     const request = new XMLHttpRequest();
 
@@ -455,7 +488,14 @@ function showChart(element) {
     let keyPoints = [];
     if(capacityAnswers.ManicB) keyPoints.push(1);
     if(capacityAnswers.ManicE) keyPoints.push(4);
- 
+
+    let title  = userInfo.firstname;
+    if(userInfo.lastname) title += ' ' + userInfo.lastname;
+    if(userInfo.occupation) title += ' (' + userInfo.occupation + ')';
+
+    parameters.chart.options.header.title.text = title;
+    parameters.chart.options.header.subTitle.text = 'Возраст: ' + userInfo.age;
+    parameters.chart.options.header.subTitle.text += ', пол: ' + getSexName(userInfo.sex)
     chartSVG = chart.drawChart(null, percents, parameters.chart.options, keyPoints);
  
     element.appendChild(chartSVG);
