@@ -16,8 +16,7 @@ export const parameters = {
     },
     'questions': {
         'element': null,
-        'json': 'json/questions.json',
-        "className": 'questionText'
+        'json': 'json/questions.json'
     },
     'results': {
         'element': null,
@@ -104,8 +103,7 @@ export const parameters = {
             graph: {
                 line: {
                     width: 10,
-                    color: "#449",
-                    className: ''
+                    color: "#449"
                 },
                 point: {
                     radius: 20,
@@ -150,7 +148,6 @@ export const capacityResults = {
     'I': 0,
     'J': 0
 };
-
 
 const instruction = {
     'title': 'Как заполнять опросный лист',
@@ -209,13 +206,6 @@ const userInfoForm = {
                 {'label': 'Женский', 'id': 'female','value': 'female'},
                 {'label': 'Мужской', 'id': 'male','value': 'male'}
             ],
-            'value': ''
-        },
-        {
-            'name': 'save',
-            'label': 'Запомнить',
-            'type': 'checkbox',
-            'required': false,
             'value': ''
         }
     ]
@@ -329,7 +319,7 @@ function createInstruction() {
 
 function createQuestion() {
     const result = common.createDiv(null, 'oxftQuestion');
-    const textDiv = common.createDiv(null, 'oxftQuestionText', parameters.questions.className);
+    const textDiv = common.createDiv(null, 'oxftQuestionText');
     const buttonsDiv = common.createDiv(null, 'oxftQuestionButtons');
     const capacityInput = common.createInput('oxftCapacity', 'hidden');
     const numInput = common.createInput('oxftNum', 'hidden');
