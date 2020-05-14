@@ -230,10 +230,12 @@ function drawGraph(data, options) {
     return graphG;
 }
 
-function drawEmphasis(dataUp, dataDown, options, style) {
+function drawHGridEmphasis(emphasis, options) {
+    const dataUp = emphasis.emphasisUp;
+    const dataDown = emphasis.emphasisDown;
 
-    let graphG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    let graphPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const graphG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const graphPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     graphG.appendChild(graphPath);
 
     let strPath ='M';
@@ -268,105 +270,29 @@ function drawEmphasis(dataUp, dataDown, options, style) {
     strPath = strPath + x + ' ' + y + ' ';
 
     setAttributeSVG(graphPath, 'd', strPath);
-    setStyle(graphPath, style);
+    setStyle(graphPath, emphasis.style);
 
     return graphG;
 }
 
+function drawHGridEmphasises(options) {
+    const graphG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+    for(let i = 0; i < options.hGrid.emphasises.length; i++) {
+        graphG.appendChild(drawHGridEmphasis(options.hGrid.emphasises[i], options));
+    }
+
+    return graphG;
+}
 
 export function drawChart(chartDiv, data, options) {
-    let zoom = 1;
-    if(!isValue(options)) {
-        options = {
-            height: '100%',
-            width: '100%',
-            topPadding: 60,
-            leftPadding: 20, // Подумать как расчитать от параметров вертикальной оси
-            chartArea: {
-                style: {
-                    width: 3,
-                    color: 'gray',
-                    className: 'rectChart'
-                }                
-            },
-            hAxis: {
-                position: 10,
-                style: {
-                    width: 3,
-                    color: 'gray',
-                    className: 'axisLine'
-                }
-            },
-            vAxis: {
-                position: 0,
-                style: {
-                    width: 3,
-                    color: 'gray',
-                    className: 'axisLine'
-                }
-            },
-            hGrid: {
-                step: 10,
-                count: 21,
-                offset: 0,
-                style: {
-                    width: 1,
-                    color: 'gray',
-                    className: 'gridLine'
-                },
-                dataLabels: {
-                    labels: ['+100', '+90','+80','+70','+60','+50','+40','+30','+20','+10',
-                    '0', '-10', '-20', '-30', '-40', '-50', '-60', '-70', '-80', '-90', '-100'],
-                    style: {
-                        fontSize: 5,
-                        anchor: 'end',
-                        offset: 15, // Подумать о замене на расчетный от leftPadding
-                        className: ''
-                    }
-                }
-            },
-            vGrid: {
-                step: 30,
-                count: 10,
-                offset: 15,
-                style: {
-                    width: 1,
-                    color: 'gray',
-                    className: 'gridLine'
-                },
-                dataLabels: {
-                    labels: ['A','B','C','D','E','F','G','H','I', 'J'],
-                    style: {
-                        fontSize: 5,
-                        anchor: 'middle',
-                        offset: 0,
-                        height: 20,
-                        className: 'rectLabel'
-                    }
-                }
-            },
-            graph: {
-                line: {
-                    width: 3,
-                    color: "blue",
-                    className: ''
-                },
-                point: {
-                    radius: 10,
-                    color: 'red',
-                }
-            }
-        }
-    }
-    
-    applyZoom(zoom, options);
 
-    let chartWidth = options.vGrid.step * options.vGrid.count 
-            + options.leftPadding;
-    let chartHeight = options.hGrid.step * (options.hGrid.count -1) 
-            + options.topPadding + options.vGrid.dataLabels.parameters.rect.height * 2;
+    const chartWidth = options.vGrid.step * options.vGrid.count + options.leftPadding;
+    const chartHeight = options.hGrid.step * (options.hGrid.count -1) + options.topPadding + options.vGrid.dataLabels.parameters.rect.height * 2;
 
-    let chartSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const chartSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const mainG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const mainRect = createRect(0, 0, '100%', '100%', options.chartArea.style);
 
     setAttributeSVG(chartSVG,  'version', '1.1');
     setAttributeSVG(chartSVG,  'width', options.width);
@@ -377,26 +303,13 @@ export function drawChart(chartDiv, data, options) {
     setAttributeSVG(chartSVG,  'fill', '#FFF');
     chartSVG.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
-    let mainG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    let mainRect = createRect(0, 0, '100%', '100%', options.chartArea.style);
-
     mainG.appendChild(mainRect);
-
     mainG.appendChild(drawGrid(options));
-
     mainG.appendChild(drawGraph(data, options));
-
-    let dataUp = [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 35]
-    let dataDown = [15, -15, -15, -15, -15, -15, -15, -15, -15, -15, -15]
-    mainG.appendChild(drawEmphasis(dataUp, dataDown, options, {fill: 'gray', width: 6, fillOpacity: .3, strokeDasharray: '60 15'}));
-
-    dataUp = [35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 50]
-    dataDown = [35, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]
-    mainG.appendChild(drawEmphasis(dataUp, dataDown, options, {fill: '#DDD', width: 6, fillOpacity: .3}));
+    mainG.appendChild(drawHGridEmphasises(options));
 
     chartSVG.appendChild(mainG);
-    if(chartDiv)
-        chartDiv.appendChild(chartSVG);
+    if(chartDiv) chartDiv.appendChild(chartSVG);
 
     return chartSVG;
 }

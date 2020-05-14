@@ -57,10 +57,7 @@ export const parameters = {
                 count: 21,
                 offset: 0,
                 extend: 200,
-                style: {
-                    width: 3,
-                    color: 'black'
-                },
+                style: {width: 3, color: 'black'},
                 dataLabels: {
                     labels: ['+100', '+90','+80','+70','+60','+50','+40','+30','+20','+10',
                     '0', '-10', '-20', '-30', '-40', '-50', '-60', '-70', '-80', '-90', '-100'],
@@ -72,18 +69,30 @@ export const parameters = {
                         anchor: 'end',
                         offset: 140 // Подумать о замене на расчетный от leftPadding
                     }
-                }
+                },
+                emphasises: [
+                    {
+                        emphasisUp: [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 35, 35],
+                        emphasisDown: [15, 15, -15, -15, -15, -15, -15, -15, -15, -15, -15, -15],
+                        style: {fill: 'gray', width: 6, fillOpacity: .3, strokeDasharray: '60 15'}
+                    },
+                    {
+                        emphasisUp: [35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 50, 50],
+                        emphasisDown: [35, 35, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7],
+                        style: {fill: '#DDD', width: 6, fillOpacity: .3}
+                    }
+                ]
             },
             vGrid: {
                 step: 400,
-                count: 10,
+                count: 11,
                 offset: 200,
                 style: {
                     width: 3,
                     color: 'black'
                 },
                 dataLabels: {
-                    labels: ['A','B','C','D','E','F','G','H','I', 'J'],
+                    labels: ['A','B','C','D','E','F','G','H','I', 'J', ' '],
                     parameters: {
                         rect: {
                             fill: 'white',
