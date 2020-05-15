@@ -366,8 +366,6 @@ function commitAnswer(answerData) {
         capacityAnswers['ManicE'] = 1;
 
     answers.push(answerData);
-    
-    saveAnswerToLocalStorage(answerData);
 }
 
 function fillQuestionForm() {
@@ -598,6 +596,7 @@ function submitQuestion(answer, value) {
     answerData.capacity = document.getElementById('oxftCapacity').value;
 
     commitAnswer(answerData);
+    saveAnswerToLocalStorage(answerData);
 
     if(answerData.num < questions.length) {
         numInput.value = answerData.num + 1;
