@@ -4,8 +4,33 @@ body {
     font-size: 1em;
 }
 
+#testListDiv {
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+    max-width: 1000px;
+}
+
+#testListDiv > div {
+    margin: .5em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 1px 1px 2px lightslategray;
+}
+
+#testListDiv > div:hover {
+    background-color: #DDD;
+}
+
+
+#testListDiv > div div {
+    margin: 0 1em;
+}
+
+
 section {
-    display: none;
+    /* display: none; */
     padding: .2em;
     border-radius: 4px;
     box-shadow: 2px 2px 4px lightslategray;
@@ -39,8 +64,12 @@ div {
     margin: 1em;
 }
 
+button:hover {
+    cursor: pointer;
+}
+
 button {
-    display: inline;
+        display: inline;
     font-size: 1em;
     font-weight: bolder;
     padding: .5em;

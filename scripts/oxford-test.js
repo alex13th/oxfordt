@@ -20,6 +20,10 @@ export const parameters = {
     },
     'results': {
         'element': null,
+        // 'uploadUri': 'http://localhost/commitAnswers.php',
+        // 'answersUri': 'http://localhost/commitAnswers.php',
+        'uploadUri': 'http://k91495hf.beget.tech/commitAnswers.php',
+        'answersUri': 'http://k91495hf.beget.tech/commitAnswers.php',
         'womenJSON': 'json/women.json',
         'menJSON': 'json/men.json',
         'boysJSON': 'json/boys.json',
@@ -163,18 +167,22 @@ export const parameters = {
                 }                
             }
         }
+    },
+    'testList': {
+        element: null
     }
 };
 
-export const userInfo = {
+export let userInfo = {
     'firstname': '',
     'lastname': '',
     'age': null,
     'sex': '',
     'occupation': ''
 };
-export const answers = [];
-export const capacityAnswers = {'A': 0, 'B': 0,'C': 0, 
+export let answers = [];
+export const testList = [];
+export let capacityAnswers = {'A': 0, 'B': 0,'C': 0, 
     'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0,'I': 0, 'J': 0,
     'ManicB': 0, 'ManicE': 0};
 
@@ -278,8 +286,8 @@ function clearLocalStorage(event) {
     event.preventDefault();
 }
 
-function clickSaveChartButton() {
-    const exportSVG = 'data:image/svg,' + escape(common.getElementById('oxftChartDiv').innerHTML);
+function clickSaveChartButton(event) {
+    const exportSVG = 'data:image/svg,' + encodeURIComponent(common.getElementById('oxftChartDiv').innerHTML);
     let exportLink = common.getElementById("osftResultA");
 
     if(exportLink) {
@@ -292,6 +300,10 @@ function clickSaveChartButton() {
 
     document.body.appendChild(exportLink);
     exportLink.click();
+}
+
+function clickSendButton(event) {
+    sendAnswers();
 }
 
 function createUserInfoForm() {
@@ -409,6 +421,35 @@ function loadJSON(url, func) {
     request.send();
 }
 
+export function clickTestButtton(event) {
+    const jsonUri = 'answers.php?test=' + event.currentTarget.value;
+    capacityAnswers = {'A': 0, 'B': 0,'C': 0, 
+    'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0,'I': 0, 'J': 0,
+    'ManicB': 0, 'ManicE': 0};
+    answers = [];
+    common.parameters.document = parameters.document;
+    loadJSON(jsonUri, loadAnswersFunc);
+}
+
+function loadAnswersFunc(){
+    const resultData = this.response;
+    userInfo = resultData.userInfo;
+    const answersData = resultData.answers;
+
+    for(let i = 0; i < answersData.length; i++){
+        let answerData = {'num': 0, 'capacity': '', 'value': 0, 'answer': ''}
+        answerData.num = answersData[i].num;
+        answerData.capacity = answersData[i].capacity;
+        answerData.value = answersData[i].value;
+        answerData.answer = answersData[i].answer;
+
+        commitAnswer(answerData);
+    }
+
+    loadRanges(userInfo, loadRangesHideFunc);
+    // parameters.results.element.style.display = 'block';
+}
+
 function loadQuestionsFunc() {
     questions = this.response;
     parameters.userInfo.element.style.display = 'block';
@@ -448,6 +489,13 @@ function loadRangesFunc() {
         showResults(parameters.results.element);
         parameters.results.element.style.display = 'block';
     }
+}
+
+function loadRangesHideFunc() {
+    ranges = this.response;
+    calculateResults();
+    showResults(parameters.results.element);
+    parameters.results.element.style.display = 'block';
 }
 
 function loadUserInfoFromLocalStorage() {
@@ -493,6 +541,17 @@ function saveAnswerToLocalStorage(answer) {
 
 }
 
+function sendAnswers() {
+    const xhr = new XMLHttpRequest();
+    const resultData = {'userInfo': userInfo, 'answers': answers};
+    const resultJSON = JSON.stringify(resultData);
+
+    xhr.open("POST", parameters.results.uploadUri, true)
+    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+    
+    xhr.send(resultJSON);
+}
+
 function showResults(element) {
     const points = [];
     const percents = [];
@@ -500,6 +559,8 @@ function showResults(element) {
     const pointsDiv = common.createDiv(null, 'oxftPointsDiv');
     const percentsDiv = common.createDiv(null, 'oxftPercentsDiv');
     const chartDiv = common.createDiv(null, 'oxftChartDiv');
+
+    element.innerHTML = "";
 
     resultDiv.style.display = 'flex';
     pointsDiv.style.flex = '1';
@@ -543,7 +604,13 @@ function showResults(element) {
 
     const saveButton = common.createButton('Сохранить график', 'oxftSave')
     saveButton.addEventListener('click', clickSaveChartButton);
+
+    const sendButton = common.createButton('Отправить результаты', 'oxftSend')
+    sendButton.addEventListener('click', clickSendButton);
+
+
     buttonsDiv.appendChild(saveButton);
+    buttonsDiv.appendChild(sendButton);
 
     element.appendChild(chartDiv);
     element.appendChild(buttonsDiv);
@@ -574,6 +641,8 @@ function showChart(element) {
     parameters.chart.options.header.title.text = title;
     parameters.chart.options.header.subTitle.text = 'Возраст: ' + userInfo.age;
     parameters.chart.options.header.subTitle.text += ', пол: ' + getSexName(userInfo.sex)
+
+    if(chartSVG) chartSVG.remove();
     chartSVG = chart.drawChart(null, percents, parameters.chart.options, keyPoints);
  
     element.appendChild(chartSVG);
@@ -677,6 +746,7 @@ function testRangesFunc() {
 
 function testQuestionsFunc() {
     questions = this.response;
+    loadAnswersFromLocalStorage();
 
     calculateResults();
     showResults(parameters.results.element);
