@@ -5,36 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script type="module" src="./scripts/common.js"></script>
-    <script type="module" src="./scripts/oxford-test.js"></script>
     <title>Оксфордский тест анализа особенностей</title>
 </head>
 <body>
-    <main>
+    <main id="main">
         <h1>Оксфордский тест анализа особенностей</h1>
-        <section id="instruction" class="instruction">
-        </section>
-        <section id="userInfo" class="inputForm">
-        </section>
-        <section id="question" class="inputForm">
-        </section>
-        <section id="results" class="results">
-        </section>
     </main>
     <script type="module">
         import * as oxft from './scripts/oxford-test.js'
-        let sectionInstr = document.getElementById("instruction");
-        let sectionUserInfo = document.getElementById("userInfo");
-        let sectionQuestion = document.getElementById("question");
-        let sectionResults = document.getElementById("results");
-        let secitonChart =  document.getElementById("chart");
 
-        oxft.parameters.document = document;
-        oxft.parameters.instruction.element = sectionInstr;
-        oxft.parameters.userInfo.element = sectionUserInfo;
-        oxft.parameters.questions.element = sectionQuestion;
-        oxft.parameters.results.element = sectionResults;
-
+        oxft.parameters.userInfo.style.className = 'inputForm';
+        oxft.initTest(document.getElementById("main"));
         oxft.startTest();
     </script>
 </body>

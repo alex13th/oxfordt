@@ -8,7 +8,7 @@ body {
     display: flex;
     flex-direction: column;
     margin: auto;
-    max-width: 1000px;
+    width: fit-content;
 }
 
 #testListDiv > div {
@@ -26,11 +26,18 @@ body {
 
 #testListDiv > div div {
     margin: 0 1em;
+    padding: 0 .2em;
+    line-height: 50px;
+    height: 50px;
+    border-left: 1px solid rgba(0, 0, 0, .2);
+}
+
+#testListDiv > div div:first-child {
+    border-left: 0;
 }
 
 
 section {
-    /* display: none; */
     padding: .2em;
     border-radius: 4px;
     box-shadow: 2px 2px 4px lightslategray;
@@ -61,7 +68,7 @@ input {
 
 div {
     text-align: center;
-    margin: 1em;
+    margin: .7em;
 }
 
 button:hover {
@@ -69,7 +76,7 @@ button:hover {
 }
 
 button {
-        display: inline;
+    display: inline;
     font-size: 1em;
     font-weight: bolder;
     padding: .5em;
@@ -83,23 +90,30 @@ button {
 
 .inputForm ul {
     padding: 0;
+    margin: .5em;
+}
 
+.inputForm li div {
+    margin: 0;
 }
 
 .inputForm li {
    display: flex;
    list-style: none;
-   margin: 1em .5em;
+   margin: 1em .3em;
 }
 
 .inputForm li > input {
     flex: 1;
+    padding: .2em;
 }
 
 .inputForm li > input[type="radio"] {
     flex: none;
 }
 
-.inputForm li > label {
+.inputForm li label {
+    display: flex;
     padding-right: .5em;
+    min-width: 90px;;
 }

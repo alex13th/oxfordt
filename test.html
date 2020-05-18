@@ -5,35 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script type="module" src="./scripts/common.js"></script>
-    <script type="module" src="./scripts/oxford-test.js"></script>
     <title>Оксфордский тест анализа особенностей</title>
 </head>
 <body>
-    <main>
+    <main id="main">
         <h1>Оксфордский тест анализа особенностей</h1>
-        <section id="instruction" class="instruction">
-        </section>
-        <section id="userInfo" class="inputForm">
-        </section>
-        <section id="question" class="inputForm">
-        </section>
-        <section id="results" class="results">
-        </section>
     </main>
     <script type="module">
         import * as oxft from './scripts/oxford-test.js'
-        let sectionInstr = document.getElementById("instruction");
-        let sectionUserInfo = document.getElementById("userInfo");
-        let sectionQuestion = document.getElementById("question");
-        let sectionResults = document.getElementById("results");
-        let secitonChart =  document.getElementById("chart");
-
-        oxft.parameters.document = document;
-        oxft.parameters.instruction.element = sectionInstr;
-        oxft.parameters.userInfo.element = sectionUserInfo;
-        oxft.parameters.questions.element = sectionQuestion;
-        oxft.parameters.results.element = sectionResults;
+        oxft.parameters.userInfo.style.className = 'inputForm';
+        oxft.initTest(document.getElementById("main"));
 
         oxft.userInfo.firstname = 'Иван';
         oxft.userInfo.lastname = 'Иванов';
@@ -41,21 +22,20 @@
         oxft.userInfo.sex = 'male';
         oxft.userInfo.occupation = 'Разнорабочий';
 
-        oxft.capacityAnswers.A = 96;
-        oxft.capacityAnswers.B = 106;
-        oxft.capacityAnswers.C = 103;
-        oxft.capacityAnswers.D = 87;
-        oxft.capacityAnswers.E = 91;
-        oxft.capacityAnswers.F = 86;
-        oxft.capacityAnswers.G = 96;
-        oxft.capacityAnswers.H = 97;
-        oxft.capacityAnswers.I = 90;
-        oxft.capacityAnswers.J = 95;
-        oxft.capacityAnswers.ManicE = 0;
+        oxft.capacityResults.A = 90;
+        oxft.capacityResults.B = 98;
+        oxft.capacityResults.C = -8;
+        oxft.capacityResults.D = 58;
+        oxft.capacityResults.E = 97;
+        oxft.capacityResults.F = 81;
+        oxft.capacityResults.G = -58;
+        oxft.capacityResults.H = 34;
+        oxft.capacityResults.I = 34;
+        oxft.capacityResults.J = 22;
+        oxft.capacityAnswers.ManicE = 1;
         oxft.capacityAnswers.ManicB = 0;
-        oxft.testTest();
 
-        // oxft.startTest();
+        oxft.testTest();
     </script>
 </body>
 </html>

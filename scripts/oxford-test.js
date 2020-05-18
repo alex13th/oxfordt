@@ -3,16 +3,25 @@ import * as chart from './chart.js';
 
 let questions;
 let ranges;
+const promises = {
+    'questions': null,
+    'ranges': null,
+    'results': null
+}
 
 export let chartSVG;
 
 export const parameters = {
     'document': null,
+    'container': null,
     'instruction': {
         'element': null
     },
     'userInfo': {
-        'element': null
+        'element': null,
+        'style': {
+            'className': 'inputForm'
+        }
     },
     'questions': {
         'element': null,
@@ -20,10 +29,8 @@ export const parameters = {
     },
     'results': {
         'element': null,
-        // 'uploadUri': 'http://localhost/commitAnswers.php',
-        // 'answersUri': 'http://localhost/commitAnswers.php',
-        'uploadUri': 'http://k91495hf.beget.tech/commitAnswers.php',
-        'answersUri': 'http://k91495hf.beget.tech/commitAnswers.php',
+        'uploadUri': 'http://localhost/uploadResults.php',
+        'getUri': 'http://localhost/getResults.php',
         'womenJSON': 'json/women.json',
         'menJSON': 'json/men.json',
         'boysJSON': 'json/boys.json',
@@ -262,6 +269,10 @@ const userInfoForm = {
 }
 
 function calculateResults() {
+    for(let i = 0; i < answers.length; i++) {
+        commitAnswer(answers[i]);
+    }
+
     if(ranges) {
         capacityResults.A = ranges.A[capacityAnswers.A];
         capacityResults.B = ranges.B[capacityAnswers.B];
@@ -282,7 +293,7 @@ function calculateResults() {
 function clearLocalStorage(event) {
     localStorage.clear();
     event.currentTarget.form.reset();
-
+    resetTestData();
     event.preventDefault();
 }
 
@@ -306,7 +317,32 @@ function clickSendButton(event) {
     sendAnswers();
 }
 
+export function clickTestButtton(event) {
+    const jsonUri = parameters.results.getUri + '?test=' + event.currentTarget.value;
+    resetTestData();
+
+    promises.results = loadJSON(jsonUri);
+
+    promises.ranges = promises.results.then(response => {
+        return new Promise(function (resolve, reject){
+            const resultData = response;
+            userInfo = resultData.userInfo;
+            answers = resultData.answers;
+            resolve(resultData);
+        });
+    }).then(resultData => {
+        return loadRanges(resultData.userInfo);
+    })
+
+    promises.ranges.then(function() {
+        calculateResults();
+        showChart(parameters.results.element);
+        parameters.results.element.style.display = 'block';
+    })
+}
+
 function createUserInfoForm() {
+    const result = common.createSection(null, null, parameters.userInfo.style);
     const form = common.createForm();
     const buttonsDiv = common.createDiv();
 
@@ -323,11 +359,13 @@ function createUserInfoForm() {
     }
 
     form.addEventListener('submit', submitUserInfo);
+    result.appendChild(form);
 
-    return form;
+    return result;
 }
 
 function createInstruction() {
+    const result = common.createSection(null, null, parameters.instruction.style);
     const form = common.createForm();
     const buttonsDiv = common.createDiv();
 
@@ -338,12 +376,14 @@ function createInstruction() {
     form.appendChild(buttonsDiv);
 
     form.addEventListener('submit', submitInstruction);
+    result.appendChild(form);
 
-    return form;
+    return result;
 }
 
 function createQuestion() {
-    const result = common.createDiv(null, 'oxftQuestion');
+    const result = common.createSection(null, null, parameters.instruction.style);
+    const questionDiv = common.createDiv(null, 'oxftQuestion');
     const textDiv = common.createDiv(null, 'oxftQuestionText');
     const buttonsDiv = common.createDiv(null, 'oxftQuestionButtons');
     const capacityInput = common.createInput('oxftCapacity', 'hidden');
@@ -360,10 +400,11 @@ function createQuestion() {
     buttonsDiv.appendChild(unknownButton);
     buttonsDiv.appendChild(noButton);
 
-    result.appendChild(textDiv);
-    result.appendChild(capacityInput);
-    result.appendChild(numInput);
-    result.appendChild(buttonsDiv);
+    questionDiv.appendChild(textDiv);
+    questionDiv.appendChild(capacityInput);
+    questionDiv.appendChild(numInput);
+    questionDiv.appendChild(buttonsDiv);
+    result.appendChild(questionDiv);
 
     return result;
 }
@@ -376,8 +417,13 @@ function commitAnswer(answerData) {
 
     if((answerData.num == 22) & (answerData.answer.toUpperCase() == 'YES'))
         capacityAnswers['ManicE'] = 1;
+}
 
-    answers.push(answerData);
+function resetTestData(){
+    capacityAnswers = {'A': 0, 'B': 0,'C': 0, 
+    'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0,'I': 0, 'J': 0,
+    'ManicB': 0, 'ManicE': 0};
+    answers = [];
 }
 
 function fillQuestionForm() {
@@ -410,52 +456,32 @@ function getSexName(sex) {
     }
 }
 
-function loadJSON(url, func) {
-    const request = new XMLHttpRequest();
+function loadJSON(url) {
+    return new Promise(function(resolve, reject) {
+        const xhr = new XMLHttpRequest();
 
-    request.open('GET', url);
-    request.responseType = 'json';
+        xhr.open('GET', url);
+        xhr.responseType = 'json';
 
-    request.onload = func;
+        xhr.onload = function() {
+            if (this.status == 200) {
+                resolve(this.response);
+            } else {
+                var error = new Error(this.statusText);
+                error.code = this.status;
+                reject(error);
+            }
+        };
 
-    request.send();
+        xhr.onerror = function() {
+            reject(new Error("Network Error"));
+        };
+
+        xhr.send();
+    })
 }
 
-export function clickTestButtton(event) {
-    const jsonUri = 'answers.php?test=' + event.currentTarget.value;
-    capacityAnswers = {'A': 0, 'B': 0,'C': 0, 
-    'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0,'I': 0, 'J': 0,
-    'ManicB': 0, 'ManicE': 0};
-    answers = [];
-    common.parameters.document = parameters.document;
-    loadJSON(jsonUri, loadAnswersFunc);
-}
-
-function loadAnswersFunc(){
-    const resultData = this.response;
-    userInfo = resultData.userInfo;
-    const answersData = resultData.answers;
-
-    for(let i = 0; i < answersData.length; i++){
-        let answerData = {'num': 0, 'capacity': '', 'value': 0, 'answer': ''}
-        answerData.num = answersData[i].num;
-        answerData.capacity = answersData[i].capacity;
-        answerData.value = answersData[i].value;
-        answerData.answer = answersData[i].answer;
-
-        commitAnswer(answerData);
-    }
-
-    loadRanges(userInfo, loadRangesHideFunc);
-    // parameters.results.element.style.display = 'block';
-}
-
-function loadQuestionsFunc() {
-    questions = this.response;
-    parameters.userInfo.element.style.display = 'block';
-}
-
-function loadRanges(userInfo, func) {
+function loadRanges(userInfo) {
     let json;
     if(userInfo.sex == 'female') {
         if(userInfo.age > 18) {
@@ -473,29 +499,22 @@ function loadRanges(userInfo, func) {
             json = parameters.results.boysJSON;
         }
     }
-
-    loadJSON(json, func);
+    
+    return new Promise(function(resolve, reject) {
+        loadJSON(json).then(response => {
+            ranges = response;
+            resolve(ranges);
+        });
+    })
 }
 
-function loadRangesFunc() {
-    ranges = this.response;
-    loadAnswersFromLocalStorage()
-    parameters.userInfo.element.style.display = 'none';
-    if(fillQuestionForm()) {
-        parameters.instruction.element.style.display = 'block';
-    }
-    else {
-        calculateResults();
-        showResults(parameters.results.element);
-        parameters.results.element.style.display = 'block';
-    }
-}
-
-function loadRangesHideFunc() {
-    ranges = this.response;
-    calculateResults();
-    showResults(parameters.results.element);
-    parameters.results.element.style.display = 'block';
+function loadQuestions() {
+    return new Promise(function(resolve, reject) {
+        loadJSON(parameters.questions.json).then(response => {
+            questions = response;
+            resolve(questions);
+        });
+    }) 
 }
 
 function loadUserInfoFromLocalStorage() {
@@ -508,20 +527,16 @@ function loadUserInfoFromLocalStorage() {
 }
 
 function loadAnswersFromLocalStorage() {
-    for(let i = 0; i < questions.length; i++){
-        let answerData = {'num': 0, 'capacity': '', 'value': 0, 'answer': ''}
-        let numStr =  localStorage.getItem('answer_' + questions[i].Num + '_num');
-        if(numStr) {
-            answerData.num = parseInt(numStr);
-            answerData.capacity = localStorage.getItem('answer_' + questions[i].Num + '_capacity');
-            answerData.value = parseInt(localStorage.getItem('answer_' + questions[i].Num + '_value'));
-            answerData.answer = localStorage.getItem('answer_' + questions[i].Num + '_answer');
+    let i = 1;
 
-            commitAnswer(answerData);
-        }
-        else {
-            break;
-        }
+    while(localStorage.getItem('answer_' + (i) + '_num')){
+        let answerData = {'num': 0, 'capacity': '', 'value': 0, 'answer': ''}
+        answerData.num = parseInt(localStorage.getItem('answer_' + i + '_num'));
+        answerData.capacity = localStorage.getItem('answer_' + i + '_capacity');
+        answerData.value = parseInt(localStorage.getItem('answer_' + i + '_value'));
+        answerData.answer = localStorage.getItem('answer_' + i + '_answer');
+        answers.push(answerData);
+        i++;
     }
 }
 
@@ -534,11 +549,11 @@ function saveUserInfoToLocalStorage() {
 }
 
 function saveAnswerToLocalStorage(answer) {
+    localStorage.setItem('max_answer_num', answer.num);
     localStorage.setItem('answer_' + answer.num + '_num', answer.num);
     localStorage.setItem('answer_' + answer.num + '_capacity', answer.capacity);
     localStorage.setItem('answer_' + answer.num + '_value', answer.value);
     localStorage.setItem('answer_' + answer.num + '_answer', answer.answer);
-
 }
 
 function sendAnswers() {
@@ -552,9 +567,17 @@ function sendAnswers() {
     xhr.send(resultJSON);
 }
 
-function showResults(element) {
+function showResults() {
     const points = [];
     const percents = [];
+    
+    if(!common.isValue(parameters.results.element)) {
+        parameters.results.element = createInstruction();
+        parameters.results.element.style.display = 'none';
+        parameters.container.appendChild(parameters.results.element);
+    }
+
+    const element = parameters.results.element;
     const resultDiv = common.createDiv(null, 'oxftResultDiv');
     const pointsDiv = common.createDiv(null, 'oxftPointsDiv');
     const percentsDiv = common.createDiv(null, 'oxftPercentsDiv');
@@ -664,8 +687,9 @@ function submitQuestion(answer, value) {
     answerData.num = parseInt(document.getElementById('oxftNum').value);
     answerData.capacity = document.getElementById('oxftCapacity').value;
 
-    commitAnswer(answerData);
     saveAnswerToLocalStorage(answerData);
+
+    answers.push(answerData);
 
     if(answerData.num < questions.length) {
         numInput.value = answerData.num + 1;
@@ -673,7 +697,7 @@ function submitQuestion(answer, value) {
     }
     else {
         calculateResults();
-        showResults(parameters.results.element);
+        showResults();
         parameters.questions.element.style.display = 'none';
         parameters.results.element.style.display = 'block';
     }
@@ -708,75 +732,71 @@ function submitUserInfo(event) {
     }
 
     saveUserInfoToLocalStorage();
-    loadRanges(userInfo, loadRangesFunc);
+    promises.ranges = loadRanges(userInfo);
+
+    Promise.all([promises.ranges, promises.questions]).then(function() {
+        if(fillQuestionForm()) {
+            parameters.instruction.element.style.display = 'block';
+        }
+        else {
+            calculateResults();
+            showResults(parameters.results.element);
+            parameters.results.element.style.display = 'block';
+        }
+    });
+
+    parameters.userInfo.element.style.display = 'none';
 
     event.preventDefault();
 }
 
-export function startTest() {
+export function initTest(element) {
+    resetTestData();
+    promises.questions = loadQuestions()
     loadUserInfoFromLocalStorage();
+    loadAnswersFromLocalStorage()
+
+    parameters.document = element.ownerDocument;
+    parameters.container = element;
+    common.parameters.document = parameters.document;
+
     userInfoForm.questions[0].value = userInfo.firstname;
     userInfoForm.questions[1].value = userInfo.lastname;
     userInfoForm.questions[2].value = userInfo.age;
     userInfoForm.questions[3].value = userInfo.occupation;
     userInfoForm.questions[4].value = userInfo.sex;
+}
 
-    common.parameters.document = parameters.document;
+export function startTest() {
+    if(!common.isValue(parameters.instruction.element)) {
+        parameters.instruction.element = createInstruction();
+        parameters.instruction.element.style.display = 'none';
+        parameters.container.appendChild(parameters.instruction.element);
+    }
 
-    parameters.instruction.element.style.display = 'none';
-    parameters.instruction.element.appendChild(createInstruction());
+    if(!common.isValue(parameters.userInfo.element)) {
+        parameters.userInfo.element = createUserInfoForm();
+        parameters.userInfo.element.style.display = 'none';
+        parameters.container.appendChild(parameters.userInfo.element);
+    }
 
-    parameters.userInfo.element.style.display = 'none';
-    parameters.userInfo.element.appendChild(createUserInfoForm());
+    if(!common.isValue(parameters.questions.element)) {
+        parameters.questions.element = createQuestion();
+        parameters.questions.element.style.display = 'none';
+        parameters.container.appendChild(parameters.questions.element);
+    }
 
-    parameters.questions.element.style.display = 'none';
-    parameters.questions.element.appendChild(createQuestion());
-
-    parameters.results.element.style.display = 'none';
-
-    loadJSON(parameters.questions.json, loadQuestionsFunc);
+    parameters.userInfo.element.style.display = 'block';
 }
 
 // Секция тестовых функций
 
-function testRangesFunc() {
-    ranges = this.response;
-    loadJSON(parameters.questions.json, testQuestionsFunc);
-}
-
-function testQuestionsFunc() {
-    questions = this.response;
-    loadAnswersFromLocalStorage();
-
-    calculateResults();
-    showResults(parameters.results.element);
-
-    parameters.questions.element.style.display = 'none';
-    parameters.results.element.style.display = 'block';
-}
-
 export function testTest() {
-    userInfoForm.questions[0].value = userInfo.firstname;
-    userInfoForm.questions[1].value = userInfo.lastname;
-    userInfoForm.questions[2].value = userInfo.age;
-    userInfoForm.questions[3].value = userInfo.occupation;
-    userInfoForm.questions[4].value = userInfo.sex;
-
-
-    common.parameters.document = parameters.document;
-
-    parameters.instruction.element.style.display = 'none';
-    parameters.instruction.element.appendChild(createInstruction());
-
-    parameters.userInfo.element.style.display = 'none';
-    parameters.userInfo.element.appendChild(createUserInfoForm());
-
-    parameters.questions.element.style.display = 'none';
-    parameters.questions.element.appendChild(createQuestion());
-
-    parameters.results.element.style.display = 'none';
-
-    loadRanges(userInfo, testRangesFunc);
+    promises.ranges = loadRanges(userInfo);
+    promises.ranges.then(function(){
+        showResults();
+        parameters.results.element.style.display = 'block';
+    })
 }
 
 // Секция тестовых функций

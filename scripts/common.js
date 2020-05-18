@@ -1,6 +1,7 @@
 export const parameters = {'document': null};
   
-export function addRadioInputs(element, name, options, value=null, required, style=null) {
+export function addRadioInputs(name, options, value=null, required, style=null) {
+    const result = createDiv();
     for(let i = 0; i < options.length; i++) {
         const optionLabel = createLabel(options[i].label, options[i].id, style);
         const optionInput = createInput(name, 'radio', value, required, style);
@@ -9,8 +10,9 @@ export function addRadioInputs(element, name, options, value=null, required, sty
         optionInput.checked = (options[i].value == value)
 
         optionLabel.insertBefore(optionInput, optionLabel.firstChild);
-        element.appendChild(optionLabel);
+        result.appendChild(optionLabel);
     }
+    return result;
 }
 
 export function createA(href=null, text=null, id=null, download=null, style=null) {
@@ -75,7 +77,7 @@ export function createField(item, style=null) {
     }
     else if (item.type == 'radio') {
         result.appendChild(createLabel(label, inpName));
-        addRadioInputs(result, inpName, item.options, item.value, required, item.style)
+        result.appendChild(addRadioInputs(inpName, item.options, item.value, required, item.style));
     }
     else if (item.type == 'checkbox') {
         result.appendChild(createCheckboxInput(inpName, label, item.value, required, item.style));
@@ -161,6 +163,16 @@ export function createNumberInput(name, placeholder='', value=null, required=fal
     return result;
 }
 
+export function createSection(text=null, id=null, style=null) {
+    const result = parameters.document.createElement('section');
+
+    if(text) result.innerHTML = text;
+    if(id) result.id = id;
+    if(style) setStyle(result, style);
+
+    return result;
+}
+
 export function createTextInput(name, placeholder=null, value=null, required=false, style=null) {
     const result = createInput(name, 'text', value, required, style);
 
@@ -177,10 +189,10 @@ export function getElementsByName(name) {
     return document.getElementsByName(name);
 }
 
-function isValue(value) {
+export function isValue(value) {
     return !(value == null || value === undefined || value === '')
 }
 
-function setStyle(element, style) {
+export function setStyle(element, style) {
     if(isValue(style.className)) element.className = style.className;
 }
