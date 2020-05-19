@@ -6,7 +6,8 @@ let ranges;
 const promises = {
     'questions': null,
     'ranges': null,
-    'results': null
+    'results': null,
+    'resultList': null
 }
 
 export let chartSVG;
@@ -20,7 +21,7 @@ export const parameters = {
     'userInfo': {
         'element': null,
         'style': {
-            'className': 'inputForm'
+            'className': null
         }
     },
     'questions': {
@@ -29,14 +30,25 @@ export const parameters = {
     },
     'results': {
         'element': null,
-        'uploadUri': 'http://localhost/uploadResults.php',
-        'getUri': 'http://localhost/getResults.php',
+        'uploadUri': '/uploadResults.php',
+        'getUri': '/getResults.php',
         'womenJSON': 'json/women.json',
         'menJSON': 'json/men.json',
         'boysJSON': 'json/boys.json',
         'girlsJSON': 'json/girls.json'
     },
+    'resultList': {
+        'element': null,
+        'getUri': '/getResultsList.php',
+        'style': {
+            'className': null
+        }    
+    },
     'chart': {
+        'element': null,
+        'style': {
+            'className': 'chartDiv'
+        },
         'options': {
             height: '100%',
             width: '100%',
@@ -175,9 +187,6 @@ export const parameters = {
             }
         }
     },
-    'testList': {
-        element: null
-    }
 };
 
 export let userInfo = {
@@ -188,7 +197,6 @@ export let userInfo = {
     'occupation': ''
 };
 export let answers = [];
-export const testList = [];
 export let capacityAnswers = {'A': 0, 'B': 0,'C': 0, 
     'D': 0, 'E': 0, 'F': 0, 'G': 0, 'H': 0,'I': 0, 'J': 0,
     'ManicB': 0, 'ManicE': 0};
@@ -317,27 +325,20 @@ function clickSendButton(event) {
     sendAnswers();
 }
 
-export function clickTestButtton(event) {
+function clickTestButtton(event) {
     const jsonUri = parameters.results.getUri + '?test=' + event.currentTarget.value;
     resetTestData();
 
     promises.results = loadJSON(jsonUri);
-
-    promises.ranges = promises.results.then(response => {
-        return new Promise(function (resolve, reject){
-            const resultData = response;
-            userInfo = resultData.userInfo;
-            answers = resultData.answers;
-            resolve(resultData);
-        });
-    }).then(resultData => {
+    promises.ranges = loadResultsFromJson().then(resultData => {
         return loadRanges(resultData.userInfo);
-    })
+    });
 
     promises.ranges.then(function() {
         calculateResults();
-        showChart(parameters.results.element);
-        parameters.results.element.style.display = 'block';
+        common.clearBox(parameters.chart.element);
+        parameters.chart.element.appendChild(showChart());
+        parameters.chart.element.style.display = 'flex';
     })
 }
 
@@ -406,6 +407,30 @@ function createQuestion() {
     questionDiv.appendChild(buttonsDiv);
     result.appendChild(questionDiv);
 
+    return result;
+}
+
+function createResultItem(resultData) {
+    const result = common.createDiv();
+    
+    const completeAtDiv = common.createDiv(resultData.completedAt);
+    const nameDiv = common.createDiv(resultData.firstname + ' ' + resultData.lastname);
+    const buttonsDiv = common.createDiv();
+    const detailsButton = common.createButton('График', null, resultData.id);
+
+    detailsButton.addEventListener('click', clickTestButtton);
+
+    buttonsDiv.appendChild(detailsButton);
+
+    result.appendChild(completeAtDiv);
+    result.appendChild(nameDiv);
+    result.appendChild(buttonsDiv);
+
+    return result;
+}
+
+function createResultList() {
+    const result = common.createSection(null, null, parameters.resultList.style);
     return result;
 }
 
@@ -540,6 +565,31 @@ function loadAnswersFromLocalStorage() {
     }
 }
 
+function loadResultsFromJson() {
+    const jsonUri = parameters.results.getUri + '?test=' + event.currentTarget.value;
+    resetTestData();
+
+    return new Promise(function(resolve, reject) {
+        loadJSON(jsonUri).then(response => {
+            const resultData = response;
+            userInfo = resultData.userInfo;
+            answers = resultData.answers;
+            resolve(resultData);
+        });
+    })
+}
+
+function loadResultsListFromJson() {
+    const jsonUri = parameters.resultList.getUri;
+
+    return new Promise(function(resolve, reject) {
+        loadJSON(jsonUri).then(response => {
+            const resultsList = response;
+            resolve(resultsList);
+        });
+    })
+}
+
 function saveUserInfoToLocalStorage() {
     localStorage.setItem('userInfo_firstname', userInfo.firstname);
     localStorage.setItem('userInfo_lastname', userInfo.lastname);
@@ -567,23 +617,86 @@ function sendAnswers() {
     xhr.send(resultJSON);
 }
 
+function showChart() {
+    const percents = [];
+    const result = common.createDiv();
+ 
+    percents.push(capacityResults['A']);
+    percents.push(capacityResults['B']);
+    percents.push(capacityResults['C']);
+    percents.push(capacityResults['D']);
+    percents.push(capacityResults['E']);
+    percents.push(capacityResults['F']);
+    percents.push(capacityResults['G']);
+    percents.push(capacityResults['H']);
+    percents.push(capacityResults['I']);
+    percents.push(capacityResults['J']);
+
+    let keyPoints = [];
+    if(capacityAnswers.ManicB) keyPoints.push(1);
+    if(capacityAnswers.ManicE) keyPoints.push(4);
+
+    let title  = userInfo.firstname;
+    if(userInfo.lastname) title += ' ' + userInfo.lastname;
+    if(userInfo.occupation) title += ' (' + userInfo.occupation + ')';
+
+    parameters.chart.options.header.title.text = title;
+    parameters.chart.options.header.subTitle.text = 'Возраст: ' + userInfo.age;
+    parameters.chart.options.header.subTitle.text += ', пол: ' + getSexName(userInfo.sex)
+
+    if(chartSVG) chartSVG.remove();
+    chartSVG = chart.drawChart(null, percents, parameters.chart.options, keyPoints);
+ 
+    result.appendChild(chartSVG);
+
+    return result;
+}
+
+export function showResultList () {
+    if(!common.isValue(parameters.resultList.element)) {
+        parameters.resultList.element = createResultList();
+        parameters.resultList.element.style.display = 'none';
+        parameters.container.appendChild(parameters.resultList.element);
+    }
+
+    if(!common.isValue(parameters.chart.element)) {
+        parameters.chart.element = common.createDiv(null, null, parameters.chart.style);
+        parameters.chart.element.style.display = 'none';
+        parameters.container.appendChild(parameters.chart.element);
+        parameters.chart.element.addEventListener('click', common.closeElement);
+    }
+
+    const element = parameters.resultList.element;
+    common.clearBox(element);
+
+    promises.resultList = loadResultsListFromJson();
+
+    promises.resultList.then(resultList => {
+        for(let i = 0; i < resultList.length; i++) {
+            element.appendChild(createResultItem(resultList[i]));
+            parameters.resultList.element.style.display = 'flex';
+        }
+    });
+}
+
 function showResults() {
     const points = [];
     const percents = [];
     
     if(!common.isValue(parameters.results.element)) {
-        parameters.results.element = createInstruction();
+        parameters.results.element = common.createSection();
         parameters.results.element.style.display = 'none';
         parameters.container.appendChild(parameters.results.element);
     }
 
     const element = parameters.results.element;
+    common.clearBox(element);
+
     const resultDiv = common.createDiv(null, 'oxftResultDiv');
     const pointsDiv = common.createDiv(null, 'oxftPointsDiv');
     const percentsDiv = common.createDiv(null, 'oxftPercentsDiv');
     const chartDiv = common.createDiv(null, 'oxftChartDiv');
 
-    element.innerHTML = "";
 
     resultDiv.style.display = 'flex';
     pointsDiv.style.flex = '1';
@@ -620,7 +733,7 @@ function showResults() {
     resultDiv.appendChild(pointsDiv);
     resultDiv.appendChild(percentsDiv);
 
-    showChart(chartDiv);
+    chartDiv.appendChild(showChart());
 
     const buttonsDiv = document.createElement("div");
     buttonsDiv.id = 'oxftQuestionButtons';
@@ -637,38 +750,6 @@ function showResults() {
 
     element.appendChild(chartDiv);
     element.appendChild(buttonsDiv);
-}
-
-function showChart(element) {
-    const percents = [];
- 
-    percents.push(capacityResults['A']);
-    percents.push(capacityResults['B']);
-    percents.push(capacityResults['C']);
-    percents.push(capacityResults['D']);
-    percents.push(capacityResults['E']);
-    percents.push(capacityResults['F']);
-    percents.push(capacityResults['G']);
-    percents.push(capacityResults['H']);
-    percents.push(capacityResults['I']);
-    percents.push(capacityResults['J']);
-
-    let keyPoints = [];
-    if(capacityAnswers.ManicB) keyPoints.push(1);
-    if(capacityAnswers.ManicE) keyPoints.push(4);
-
-    let title  = userInfo.firstname;
-    if(userInfo.lastname) title += ' ' + userInfo.lastname;
-    if(userInfo.occupation) title += ' (' + userInfo.occupation + ')';
-
-    parameters.chart.options.header.title.text = title;
-    parameters.chart.options.header.subTitle.text = 'Возраст: ' + userInfo.age;
-    parameters.chart.options.header.subTitle.text += ', пол: ' + getSexName(userInfo.sex)
-
-    if(chartSVG) chartSVG.remove();
-    chartSVG = chart.drawChart(null, percents, parameters.chart.options, keyPoints);
- 
-    element.appendChild(chartSVG);
 }
 
 function submitInstruction(event) {

@@ -15,6 +15,15 @@ export function addRadioInputs(name, options, value=null, required, style=null) 
     return result;
 }
 
+export function clearBox(element)
+{
+    element.innerHTML = "";
+}
+
+export function closeElement(event) {
+    event.currentTarget.style.display = 'none';
+}
+
 export function createA(href=null, text=null, id=null, download=null, style=null) {
     const result = parameters.document.createElement('a');
 
