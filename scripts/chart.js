@@ -11,9 +11,12 @@ function applyZoom(zoom, options) {
     options.hGrid.dataLabels.style.offset *= zoom; // Подумать о замене на расчетный от leftPadding
     options.vGrid.step *= zoom;
     options.vGrid.offset *= zoom;
-    options.vGrid.dataLabels.parameters.style.fontSize *= zoom;
-    options.vGrid.dataLabels.parameters.style.offset *= zoom;
-    options.vGrid.dataLabels.parameters.rect.height *= zoom;
+    options.vGrid.topDataLabels.parameters.style.fontSize *= zoom;
+    options.vGrid.topDataLabels.parameters.style.offset *= zoom;
+    options.vGrid.topDataLabels.parameters.rect.height *= zoom;
+    options.vGrid.bottomDataLabels.parameters.style.fontSize *= zoom;
+    options.vGrid.bottomDataLabels.parameters.style.offset *= zoom;
+    options.vGrid.bottomDataLabels.parameters.rect.height *= zoom;
     return options;
 }
 
@@ -135,10 +138,17 @@ function drawVGrid(left, top, length, parameters) {
 function createRectLabel(x, y, width, title, subTitle, parameters) {
     const labelG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     const labelRect = createRect(x, y, width, parameters.rect.height, parameters.rect);
-    const labelText = createText(title, x + width/2, y + parameters.rect.height/2 - parameters.style.fontSize/2, parameters.style);
-    const labelSubText = createText(subTitle, x + width/2, y + parameters.rect.height/2 + parameters.subStyle.fontSize, parameters.subStyle);
+    // const labelText = createText(title, x + width/2, y + parameters.rect.height/2 - parameters.style.fontSize/2, parameters.style);
     labelG.appendChild(labelRect);
-    labelG.appendChild(labelText);
+    // labelG.appendChild(labelText);
+    let labelSubText = createText(subTitle[0], x + width/2, y + parameters.subStyle.fontSize*1.2, parameters.subStyle);
+    labelG.appendChild(labelSubText);
+    labelSubText = createText(subTitle[1], x + width/2, y + parameters.subStyle.fontSize*2*1.2, parameters.subStyle);
+    labelG.appendChild(labelSubText);
+    labelSubText = createText(subTitle[2], x + width/2, y + parameters.subStyle.fontSize*3*1.2, parameters.subStyle);
+    labelG.appendChild(labelSubText);
+    labelSubText = createText(subTitle[3], x + width/2, y + parameters.subStyle.fontSize*4*1.2, parameters.subStyle);
+    labelG.appendChild(labelSubText);
     labelG.appendChild(labelSubText);
     return labelG;
 }
@@ -165,7 +175,7 @@ function drawVAxisLabels(left, top, step, labelSet, bottom) {
 
 function drawGrid(left, top, options) {
     const x = left;
-    const y = top + options.vGrid.dataLabels.parameters.rect.height;
+    const y = top + options.vGrid.topDataLabels.parameters.rect.height;
     
     const gridG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 
@@ -193,10 +203,10 @@ function drawGrid(left, top, options) {
     vGridG.appendChild(gridLine); // Добавление края вертикальной сетки
     gridG.appendChild(vGridG);
 
-    const vTopLabelsG = drawVAxisLabels(x, top, options.vGrid.step, options.vGrid.dataLabels)
+    const vTopLabelsG = drawVAxisLabels(x, top, options.vGrid.step, options.vGrid.topDataLabels)
     gridG.appendChild(vTopLabelsG);
     
-    const vBottomLabelsG = drawVAxisLabels(x, y + options.hGrid.step * (options.hGrid.count - 1), options.vGrid.step, options.vGrid.dataLabels);
+    const vBottomLabelsG = drawVAxisLabels(x, y + options.hGrid.step * (options.hGrid.count - 1), options.vGrid.step, options.vGrid.bottomDataLabels);
     gridG.appendChild(vBottomLabelsG);
 
     return gridG;
@@ -304,7 +314,7 @@ function drawHGridEmphasises(left, top, options) {
 function drawChartArea(left, top, options) {
     const result = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     result.appendChild(drawGrid(left, top, options));
-    result.appendChild(drawHGridEmphasises(left, top + options.vGrid.dataLabels.parameters.rect.height, options));
+    result.appendChild(drawHGridEmphasises(left, top + options.vGrid.topDataLabels.parameters.rect.height, options));
 
     return result;
 }
@@ -326,7 +336,9 @@ export function drawChart(chartDiv, data, options, keyPoints = []) {
     const chartTitleHeight = 500;
 
     const chartWidth = options.vGrid.step * options.vGrid.count + options.leftPadding;
-    const chartHeight = options.hGrid.step * (options.hGrid.count -1) + options.topPadding + options.vGrid.dataLabels.parameters.rect.height * 2 + chartTitleHeight;
+    const chartHeight = options.hGrid.step * (options.hGrid.count -1) + options.topPadding
+                        + options.vGrid.topDataLabels.parameters.rect.height
+                        + options.vGrid.topDataLabels.parameters.rect.height + chartTitleHeight;
 
     const chartSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     const mainG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -348,7 +360,7 @@ export function drawChart(chartDiv, data, options, keyPoints = []) {
     mainG.appendChild(drawChartArea(chartAreaLeft, chartAreaTop, options));
 
     const graphAreaLeft = chartAreaLeft + options.vGrid.offset;
-    const graphAreaTop = chartAreaTop + options.vGrid.dataLabels.parameters.rect.height + options.hGrid.offset;
+    const graphAreaTop = chartAreaTop + options.vGrid.topDataLabels.parameters.rect.height + options.hGrid.offset;
     mainG.appendChild(drawGraph(graphAreaLeft, graphAreaTop, data, options, keyPoints));
 
     chartSVG.appendChild(mainG);
