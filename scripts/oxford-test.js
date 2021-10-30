@@ -220,6 +220,8 @@ export let userInfo = {
     'lastname': '',
     'age': null,
     'sex': '',
+    'email': '',
+    'phone': '',
     'occupation': ''
 };
 export let answers = [];
@@ -288,6 +290,22 @@ const userInfoForm = {
             'value': ''
         },
         {
+            'name': 'email',
+            'label': 'Эл. почта',
+            'type': 'text',
+            'required': false,
+            'placeholder': 'Эл. почта',
+            'value': ''
+        },
+        {
+            'name': 'phone',
+            'label': 'Телефон',
+            'type': 'text',
+            'required': false,
+            'placeholder': 'Телефон',
+            'value': ''
+        },
+        {
             'name': 'sex',
             'label': 'Пол',
             'type': 'radio',
@@ -349,6 +367,7 @@ function clickSaveChartButton(event) {
 
 function clickSendButton(event) {
     sendAnswers();
+    event.currentTarget.disabled = true
 }
 
 function clickTestButtton(event) {
@@ -573,6 +592,8 @@ function loadUserInfoFromLocalStorage() {
     userInfo.lastname = localStorage.getItem('userInfo_lastname');
     userInfo.age = parseInt(localStorage.getItem('userInfo_age'));
     userInfo.sex = localStorage.getItem('userInfo_sex');
+    userInfo.email = localStorage.getItem('userInfo_email');
+    userInfo.phone = localStorage.getItem('userInfo_phone');
     userInfo.occupation = localStorage.getItem('userInfo_occupation');
 
 }
@@ -621,6 +642,8 @@ function saveUserInfoToLocalStorage() {
     localStorage.setItem('userInfo_lastname', userInfo.lastname);
     localStorage.setItem('userInfo_age', userInfo.age);
     localStorage.setItem('userInfo_sex', userInfo.sex);
+    localStorage.setItem('userInfo_email', userInfo.email);
+    localStorage.setItem('userInfo_phone', userInfo.phone);
     localStorage.setItem('userInfo_occupation', userInfo.occupation);
 }
 
@@ -669,6 +692,8 @@ function showChart() {
     parameters.chart.options.header.title.text = title;
     parameters.chart.options.header.subTitle.text = 'Возраст: ' + userInfo.age;
     parameters.chart.options.header.subTitle.text += ', пол: ' + getSexName(userInfo.sex)
+    parameters.chart.options.header.subTitle.text += ', телефон: ' + userInfo.phone
+    parameters.chart.options.header.subTitle.text += ', e-mail: ' + userInfo.email
 
     if(chartSVG) chartSVG.remove();
     chartSVG = chart.drawChart(null, percents, parameters.chart.options, keyPoints);
@@ -832,6 +857,8 @@ function submitUserInfo(event) {
     userInfo.lastname = common.getElementById('inp_lastname').value;
     userInfo.age = parseInt(common.getElementById('inp_age').value);
     userInfo.occupation = common.getElementById('inp_occupation').value;
+    userInfo.email = common.getElementById('inp_email').value;
+    userInfo.phone = common.getElementById('inp_phone').value;
 
     for(let i = 0; i < sexInputs.length; i++) {
         if(sexInputs[i].checked)
@@ -871,7 +898,9 @@ export function initTest(element) {
     userInfoForm.questions[1].value = userInfo.lastname;
     userInfoForm.questions[2].value = userInfo.age;
     userInfoForm.questions[3].value = userInfo.occupation;
-    userInfoForm.questions[4].value = userInfo.sex;
+    userInfoForm.questions[4].value = userInfo.email;
+    userInfoForm.questions[5].value = userInfo.phone;
+    userInfoForm.questions[6].value = userInfo.sex;
 }
 
 export function startTest() {
